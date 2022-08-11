@@ -10,6 +10,31 @@ import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 
 
+def plot_forces_short_range(Force_ON_trace,Force_ON_retrace,Force_OFF,z):
+
+    Force_diference_trace = Force_ON_trace - Force_OFF
+    Force_diference_retrace = Force_ON_retrace - Force_OFF
+
+    figure, axis = plt.subplots(1, 2, figsize=(20, 5), sharex=True)
+
+    sns.lineplot(ax=axis[0], x=z, y=Force_diference_trace * 10 ** 9, color='red')
+
+    axis[0].set_title("Force (ON - OFF) vs Z - Trace")
+    axis[0].set_xlabel("Z[m]")
+    axis[0].set_ylabel("Force [nN]")
+    #axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
+    #axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
+
+    sns.lineplot(ax=axis[1], x=z, y=Force_diference_retrace * 10 ** 9, color='red')
+    axis[1].set_title("Force (ON - OFF) vs Z - Retrace")
+    axis[1].set_xlabel("Z[m]")
+    axis[1].set_ylabel("Force [nN]")
+
+    plt.show()
+
+
+
+
 class Spec_curve:
     def __init__(self, curve):
         self.meta = curve.referenced_by
@@ -21,8 +46,8 @@ class Spec_curve:
         if self.Z[0] < self.Z[-1]:
             pass
         elif self.Z[0] > self.Z[-1]:
-            np.flip(self.Z, 0)
-            np.flip(self.df_Z, 0)
+            self.Z = np.flipud(self.Z)
+            self.df_Z = np.flipud(self.df_Z)
 
         self.data_frame = pd.DataFrame({'Z':self.Z, 'deltaF': self.df_Z}, columns=['Z','deltaF'])
 

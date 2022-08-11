@@ -4,20 +4,37 @@ from spmUtils import *
 folder_path = "/home/captainbroccoli/Documents/2022-06-30/"
 prefix = "20220630-152823_Cu(111)--AFM_NonContact_QPlus_AtomManipulation--"
 sufix = ".Df(Z)_mtrx"
+csv_list = load_spec_list_from_cvs()
 
-path_on = f"{folder_path}{prefix}130_1{sufix}"
-path_off = f"{folder_path}{prefix}134_1{sufix}"
+path_on = []
+path_off = []
+results = pd.DataFrame()
+item = csv_list[0]
 
-mtrx_data = access2thematrix.MtrxData()
-data_file = f'{path_off}'
-traces, message = mtrx_data.open(data_file)
-curve_trace, message = mtrx_data.select_curve(traces[0])
+path_on = f"{folder_path}{prefix}{item[0]}{sufix}"
+path_off = f"{folder_path}{prefix}{item[1]}{sufix}"
 
-print(curve_trace.referenced_by["Data File Name"])
+curve_ON_trace, curve_ON_retrace= import_spectra(path_on)
+curve_OFF_trace, curve_OFF_retrace = import_spectra(path_off)
 
-x = curve_trace.data[0]
-y = curve_trace.data[1]
+# THESE ARE THE 2 ON data frames in which the force will be calculated.
+dfON_trace = curve_ON_trace.data_frame
+dfON_retrace = curve_ON_retrace.data_frame
 
-fig = plt.figure()
-sns.lineplot(x,y)
-plt.show()
+
+# OFF trace and retrace should be the same. Therefore we will take the average between them.
+
+dfOFF_trace = curve_OFF_trace.data_frame
+dfOFF_retrace = curve_OFF_retrace.data_frame
+dfOFF_temp = dfOFF_trace["deltaF"].add(dfOFF_retrace["deltaF"])/2
+dfOFF = pd.DataFrame({'deltaF': dfOFF_temp, 'Z': dfOFF_trace['Z']})
+
+force_ON_trace, z_on, _ ,_, _ = sjarvis_deconvolution(dfON_trace, A=0.01E-9, f0=-25000, k=1800)
+force_ON_retrace, z_on, _ ,_, _ = sjarvis_deconvolution(dfON_retrace, A=0.01E-9, f0=-25000, k=1800)
+force_OFF, z_off, _ ,_, _ = sjarvis_deconvolution(dfOFF, A=0.01E-9, f0=-25000, k=1800)
+
+results.insert(0,f"{item[0]}Force_ON_trace",force_ON_trace, True)
+results.insert(1,f"{item[0]}Force_ON_retrace",force_ON_retrace, True)
+results.insert(2,f"{item[1]}Force_OFF",force_OFF, True)
+results.insert(3,f"{item[0]}Z",z_on, True)
+
