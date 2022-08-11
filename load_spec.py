@@ -7,6 +7,7 @@ from spmUtils import *
 import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 
+# Loading the data from the csv file and then it is calculating the force for each spectra.
 folder_path = "/home/captainbroccoli/Documents/2022-06-30/"
 prefix = "20220630-152823_Cu(111)--AFM_NonContact_QPlus_AtomManipulation--"
 sufix = ".Df(Z)_mtrx"

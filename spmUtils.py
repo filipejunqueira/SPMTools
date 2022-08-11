@@ -7,10 +7,23 @@ from scipy.special import hyp2f1 as Fy
 from scipy.optimize import curve_fit
 import os
 import csv
+
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 
+## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
-def plot_forces_short_range(Force_ON_trace,Force_ON_retrace,Force_OFF,z):
+
+def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z):
+    '''
+    Args:
+        Force_ON_trace: Numpy array
+        Force_ON_retrace:  Numpy array
+        Force_OFF:  Numpy array
+        z:  Numpy array
+
+    Returns:
+        object: None
+    '''
 
     Force_diference_trace = Force_ON_trace - Force_OFF
     Force_diference_retrace = Force_ON_retrace - Force_OFF
@@ -22,8 +35,8 @@ def plot_forces_short_range(Force_ON_trace,Force_ON_retrace,Force_OFF,z):
     axis[0].set_title("Force (ON - OFF) vs Z - Trace")
     axis[0].set_xlabel("Z[m]")
     axis[0].set_ylabel("Force [nN]")
-    #axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
-    #axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
+    # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
+    # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
 
     sns.lineplot(ax=axis[1], x=z, y=Force_diference_retrace * 10 ** 9, color='red')
     axis[1].set_title("Force (ON - OFF) vs Z - Retrace")
@@ -33,26 +46,31 @@ def plot_forces_short_range(Force_ON_trace,Force_ON_retrace,Force_OFF,z):
     plt.show()
 
 
-
-
+# The class Spec_curve takes a curve object from the AFM_data class and creates a dataframe with the Z and deltaF values
 class Spec_curve:
     def __init__(self, curve):
         self.meta = curve.referenced_by
         self.Z = curve.data[0]
         self.df_Z = curve.data[1]
 
-    # this section makes sure that the z which is the first vector of (Z) is always crescent.
-    # If it is not it will flip the self.trace or self.retrace in order to make it crescent in Z.
+        # this section makes sure that the z which is the first vector of (Z) is always crescent.
+        # If it is not it will flip the self.trace or self.retrace in order to make it crescent in Z.
         if self.Z[0] < self.Z[-1]:
             pass
         elif self.Z[0] > self.Z[-1]:
             self.Z = np.flipud(self.Z)
             self.df_Z = np.flipud(self.df_Z)
 
-        self.data_frame = pd.DataFrame({'Z':self.Z, 'deltaF': self.df_Z}, columns=['Z','deltaF'])
+        self.data_frame = pd.DataFrame({'Z': self.Z, 'deltaF': self.df_Z}, columns=['Z', 'deltaF'])
+
 
 def import_spectra(path):
+    """
+    > The function `import_spectra` takes a path to a .mtrx file and returns a `Spec_curve` object for the trace and retrace
 
+    :param path: the path to the file you want to import
+    :return: two objects of the class Spec_curve.
+    """
     mtrx_data = access2thematrix.MtrxData()
     data_file = f'{path}'
     traces, message = mtrx_data.open(data_file)
@@ -62,6 +80,13 @@ def import_spectra(path):
 
 
 def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}"):
+    """
+    It opens the spec_list.csv file, reads the data, and returns a list of tuples
+
+    :param folder_base_path: The path to the folder where the spec_list.csv file is located, defaults to f"{os.getcwd()}"
+    (optional)
+    :return: A list of tuples. Those are your ON and OFF number files.
+    """
     data_list = []
     with open(f'{folder_base_path}/spec_list.csv', 'r') as csvfile:
         reader = csv.reader(csvfile, skipinitialspace=True)
@@ -70,13 +95,31 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}"):
     return data_list
 
 
-
 def fit_lennard_jones():
     pass
 
 
-def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,
-                      A=11.8E-12, simple=False, plot=False):
+def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,A=11.8E-12, simple=False, plot=False):
+    """
+        It takes in a bunch of parameters and returns the minimum force as well as a benchmark for Lennard Jones
+
+        :param zmin: minimum z value to calculate used to generate the z array [in m]
+        :param zmax: The maximum distance between the tip and the surface, used to generate the z array [in m]
+        :param points: number of points to calculate the mapping function, defaults to 5000 (optional)
+        :param sigma: The distance at which the potential energy is zero
+        :param E: Young's Modulus
+        :param f0: Resonant frequency of the qplus cantilever, defaults to 32768 (optional)
+        :param k: cantilever stiffness, defaults to 1800
+        :param A: The amplitude of the oscillation
+        :param simple: If you want to use the simple approximation of the Lennard Jones potential, set this to True, defaults to
+        False (optional)
+        :param plot: Boolean, if True, plots the force vs Z and deltaF vs Z, defaults to False (optional)
+        :return: The minimum force.
+    """
+
+
+
+
     if simple == False:
 
         # BENCHMARK Lennard Jones using Hyper-geometric function
@@ -85,8 +128,8 @@ def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, 
         pre_factor = -12 * f0 * E / (sigma * k * A)
 
         df_on = pre_factor * (
-                    ((sigma / z) ** (7)) * (Fy(7, 0.5, 1, (-2 * A / z)) - Fy(7, 1.5, 2, (-2 * A / z)))) - pre_factor * (
-                            ((sigma / z) ** (13)) * (Fy(13, 0.5, 1, (-2 * A / z)) - Fy(13, 1.5, 2, (-2 * A / z))))
+                ((sigma / z) ** (7)) * (Fy(7, 0.5, 1, (-2 * A / z)) - Fy(7, 1.5, 2, (-2 * A / z)))) - pre_factor * (
+                        ((sigma / z) ** (13)) * (Fy(13, 0.5, 1, (-2 * A / z)) - Fy(13, 1.5, 2, (-2 * A / z))))
         ON = pd.DataFrame({'deltaF': df_on, 'Z': z})
 
     elif simple == True:
@@ -128,7 +171,7 @@ def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, 
 
 ############### References: ##################
 
-'''
+"""
 
 [1] J. E. Sader and S. P. Jarvis
        "Accurate formulas for interaction force and energy 
@@ -183,13 +226,15 @@ OTHER:
     Phys. Rev. B 84, 085426 – Published 25 August 2011
     https://doi.org/10.1103/PhysRevB.84.085426
 
-'''
+"""
 
 
+# Deconvoluting the data.
 def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
     ############### specification: ##################
     '''
     It receives two panda data frames with the following columns:
+    It calculates the force from the frequency shift and the distance to the surface
 
     INPUT: (1 data frame + 3 float numbers).
 
@@ -198,7 +243,7 @@ def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
 
     a: is the amplitude in m
     f0: is resonance frequency in Hz
-    k: is the stiffness of the cantilever in N/m
+    k: is the stiffness of the cantilever in N/m, defaults to 1800 (optional)
 
     OUTPUT: [5 numpy arrays]
 
@@ -260,5 +305,3 @@ def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
     #     break
     #     #ValueError('the Z values of the off curve are not the same as the on, fix this first!.')
     return force, z, delta_f, omega, dz_omega
-
-
