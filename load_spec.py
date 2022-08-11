@@ -43,9 +43,10 @@ for item in csv_list:
     force_ON_retrace, z_on, _ ,_, _ = sjarvis_deconvolution(dfON_retrace, A=0.01E-9, f0=-25000, k=1800)
     force_OFF, z_off, _ ,_, _ = sjarvis_deconvolution(dfOFF, A=0.01E-9, f0=-25000, k=1800)
 
-    results.insert(2,f"{item[0]}Force",force_ON, True)
-    results.insert(2,f"{item[1]}Force",force_OFF, True)
+    results.insert(2,f"{item[0]}Force_ON",force_ON, True)
+    results.insert(2,f"{item[1]}Force_OFF",force_OFF, True)
     results.insert(2,f"{item[0]}Z",z_on, True)
+
 
 
 
