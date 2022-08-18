@@ -9,11 +9,22 @@ import os
 import csv
 
 sns.set()  # Setting seaborn as default style even if use only matplotlib
-
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
 
-def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z):
+def get_matrix_image(image_path):
+    mtrx_data = access2thematrix.MtrxData()
+    traces, message = mtrx_data.open(image_path)
+    print(message)
+
+    im, message_im = mtrx_data.select_image(traces)
+
+    return im, message, message_im
+
+
+
+
+def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=False, name="ForceVsZ"):
     '''
     Args:
         Force_ON_trace: Numpy array
@@ -30,18 +41,29 @@ def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z):
 
     figure, axis = plt.subplots(1, 2, figsize=(20, 5), sharex=True)
 
-    sns.lineplot(ax=axis[0], x=z, y=Force_diference_trace * 10 ** 9, color='red')
+    sns.lineplot(ax=axis[0], x=z*10 ** 9, y=Force_diference_trace * 10 ** 9, color='#2388E0')
 
     axis[0].set_title("Force (ON - OFF) vs Z - Trace")
-    axis[0].set_xlabel("Z[m]")
+    axis[0].set_xlabel("Z[nm]")
     axis[0].set_ylabel("Force [nN]")
     # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
     # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
 
-    sns.lineplot(ax=axis[1], x=z, y=Force_diference_retrace * 10 ** 9, color='red')
+    sns.lineplot(ax=axis[1], x=z*10 ** 9, y=Force_diference_retrace * 10 ** 9, color='#FF6961')
     axis[1].set_title("Force (ON - OFF) vs Z - Retrace")
-    axis[1].set_xlabel("Z[m]")
+    axis[1].set_xlabel("Z[nm]")
     axis[1].set_ylabel("Force [nN]")
+    
+    if save == True:
+        pwd=os.getcwd()
+        force_dir_graphs = "force_graphs"
+        if os. path.isdir(f"{pwd}/{force_dir_graphs}") == False:
+            os.mkdir(f"{pwd}/{force_dir_graphs}")
+        else:
+            pass
+        plt.savefig(fname=f"{pwd}/{force_dir_graphs}/{name}",formatstr='.eps',facecolor='auto', edgecolor='auto')
+    else:
+        pass
 
     plt.show()
 
@@ -299,9 +321,11 @@ def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
     # 7) adjust z to be the same size as F
 
     z = z[:len(force)]
-    print(len(z))
 
     # else:
     #     break
     #     #ValueError('the Z values of the off curve are not the same as the on, fix this first!.')
     return force, z, delta_f, omega, dz_omega
+
+if __name__ == '__main__':
+    main()

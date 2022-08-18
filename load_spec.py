@@ -45,7 +45,7 @@ for item in csv_list:
     results.insert(2, f"{item[1]}Force_OFF", force_OFF, True)
     results.insert(3, f"{item[0]}Z", z_on, True)
 
-    plot_forces_short_range(force_ON_trace,force_ON_retrace,force_OFF,z_on)
+    plot_forces_short_range(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"ForceVsZ{item[0]}_ON_{item[1]}_OFF", save=True)
 
 
 
