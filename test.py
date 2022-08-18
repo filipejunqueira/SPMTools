@@ -1,20 +1,15 @@
-from spmUtils import *
+import numpy as np
 
-#base_path =f"/media/captainbroccoli/DATA"
-base_path = f"/media/captainbroccoli/DATA"
-#folder="2022-07-17"
-folder="2022-07-27"
-image_prename = f"20220727-154751_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 
-for i in range(342):
-    image_name= f"{image_prename}{i+1}_1.Z_mtrx"
-    #image_name= "20220729-095353_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--168_1.Z_mtrx"
-    image_path = f"{base_path}/{folder}/{image_name}"
-    image, message, message_im= get_matrix_image(image_path)
+f = np.array([5,5,10,15,20,25,30,40,50,70,90])
+z = np.array([0,1,2,3,4,5,6,6.1,4,9,19])
 
-    # plt.imshow(image.data, interpolation='nearest')
-    # plt.show()
 
+dnum = np.ediff1d(f)
+dden = np.ediff1d(z)
+print(dnum - dnum[1:])
+print(dden)
+print(dnum/dden)
 
 
 

@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="13a8a170-7628-4f49-9877-dd61de190cf3" name="Changes" comment="V0.1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/ForceVsZ130_1_ON_131_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/ForceVsZ132_1_ON_131_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/ForceVsZ133_1_ON_131_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/ForceVsZ135_1_ON_134_1_OFF.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/load_spec.py" beforeDir="false" afterPath="$PROJECT_DIR$/load_spec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/spec_list.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/spmUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/spmUtils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
@@ -46,7 +51,7 @@
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
-  <component name="RunManager" selected="Python.Test">
+  <component name="RunManager" selected="Python.load_spec">
     <configuration name="Test" type="PythonConfigurationType" factoryName="Python">
       <module name="SPMTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -70,9 +75,6 @@
       <module name="SPMTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/def/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -103,7 +105,8 @@
       <updated>1660235188974</updated>
       <workItem from="1660235192412" duration="3325000" />
       <workItem from="1660250625749" duration="4066000" />
-      <workItem from="1660759706247" duration="5236000" />
+      <workItem from="1660759706247" duration="7285000" />
+      <workItem from="1660837798884" duration="10926000" />
     </task>
     <task id="LOCAL-00001" summary="Test">
       <created>1660235289542</created>

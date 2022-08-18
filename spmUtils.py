@@ -22,37 +22,103 @@ def get_matrix_image(image_path):
     return im, message, message_im
 
 
+def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z,save=False, name="dfvsZ"):
+
+    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color='#77DD77')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color='#fdfd96')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color='#ff6961')
+
+    axis.set_title("df (ON and OFF) vs Z")
+    axis.set_xlabel("Z[nm]")
+    axis.set_ylabel("df[Hz]")
 
 
-def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=False, name="ForceVsZ"):
-    '''
-    Args:
-        Force_ON_trace: Numpy array
-        Force_ON_retrace:  Numpy array
-        Force_OFF:  Numpy array
-        z:  Numpy array
+    if save == True:
+        pwd = os.getcwd()
+        directory_path = "force_graphs"
+        if os.path.isdir(f"{pwd}/{directory_path}") == False:
+            os.mkdir(f"{pwd}/{directory_path}")
+        else:
+            pass
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+    else:
+        pass
 
-    Returns:
-        object: None
-    '''
+    plt.show()
 
-    Force_diference_trace = Force_ON_trace - Force_OFF
-    Force_diference_retrace = Force_ON_retrace - Force_OFF
+
+def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=False, name="ForceVsZ"):
+
+    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace* 10 ** 12, color='#77DD77')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace* 10 ** 12, color='#fdfd96')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF* 10 ** 12, color='#ff6961')
+
+
+    axis.set_title("Force (ON and OFF) vs Z")
+    axis.set_xlabel("Z[nm]")
+    axis.set_ylabel("Force [pN]")
+
+
+    if save == True:
+        pwd = os.getcwd()
+        directory_path = "force_graphs"
+        if os.path.isdir(f"{pwd}/{directory_path}") == False:
+            os.mkdir(f"{pwd}/{directory_path}")
+        else:
+            pass
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+    else:
+        pass
+
+    plt.show()
+
+
+def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ"):
+    figure, axis = plt.subplots(1, 1, figsize=(10, 5), sharex=True)
+
+    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 12, color='#77DD77')
+    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 12, color='#fdfd96')
+
+    axis.set_title("Force (ON - OFF) vs Z")
+    axis.set_xlabel("Z[nm]")
+    axis.set_ylabel("Force [pN]")
+
+    if save == True:
+        pwd = os.getcwd()
+        directory_path = "force_graphs"
+        if os.path.isdir(f"{pwd}/{directory_path}") == False:
+            os.mkdir(f"{pwd}/{directory_path}")
+        else:
+            pass
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+    else:
+        pass
+
+    plt.show()
+
+def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace,df_off,z_force,z_df, save=False, name="ForceVsZ"):
+
 
     figure, axis = plt.subplots(1, 2, figsize=(20, 5), sharex=True)
 
-    sns.lineplot(ax=axis[0], x=z*10 ** 9, y=Force_diference_trace * 10 ** 9, color='#2388E0')
+    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_trace * 10 ** 12, color='#2388E0')
+    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_retrace * 10 ** 12, color='#FF6961')
 
-    axis[0].set_title("Force (ON - OFF) vs Z - Trace")
+    axis[0].set_title("Force (ON - OFF) vs Z")
     axis[0].set_xlabel("Z[nm]")
-    axis[0].set_ylabel("Force [nN]")
-    # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
-    # axis[0].text(x=0, y=0, s=f"Min Force {np.round(np.min(Force_ON_trace) * 10 ** 9, 2)} nN")
+    axis[0].set_ylabel("Force[pN]")
 
-    sns.lineplot(ax=axis[1], x=z*10 ** 9, y=Force_diference_retrace * 10 ** 9, color='#FF6961')
-    axis[1].set_title("Force (ON - OFF) vs Z - Retrace")
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_trace, color='#FF6961')
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_retrace, color='#FF6961')
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_off, color='#FF6961')
+
+    axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z")
     axis[1].set_xlabel("Z[nm]")
-    axis[1].set_ylabel("Force [nN]")
+    axis[1].set_ylabel("df[Hz]")
     
     if save == True:
         pwd=os.getcwd()
@@ -99,7 +165,7 @@ def import_spectra(path):
     curve_trace, message = mtrx_data.select_curve(traces[0])
     curve_retrace, message = mtrx_data.select_curve(traces[1])
     return Spec_curve(curve_trace), Spec_curve(curve_retrace)
-
+    #TODO: Return this as a dictionary instead of an object {trace: curve_trace, retrace: curve_retrace, Z: }
 
 def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}"):
     """
@@ -308,13 +374,13 @@ def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
 
         # 5b) calculate integral Eq.(9) in [1] using the trapezoidal method.
         integral = np.trapz(
-            y=(1 + np.sqrt(A) / (8 * np.sqrt(np.pi * (t - z[j])))) * omega_temp - A ** (3 / 2) / np.sqrt(
-                2 * (t - z[j])) * dz_omega_temp, x=t)
+            y=(1 + np.sqrt(A) / (8 * np.sqrt(np.pi * (t - z[j])))) * omega_temp - ((A ** (3 / 2)) / (np.sqrt(
+                2 * (t - z[j]))))* dz_omega_temp, x=t)
 
         # 5c) corrections for t=z C(j) #All corrections are already divided automatically by f0 since Im using the corrected omega (delta_f/f0)
         correction1 = omega[j] * (z[j + 1] - z[j])
         correction2 = 2 * (np.sqrt(A) / (8 * np.sqrt(np.pi))) * (omega[j] * np.sqrt(z[j + 1] - z[j]))
-        correction3 = (-np.sqrt(2)) * (A ** (3 / 2)) * (dz_omega[j] * np.sqrt(z[j + 1] - z[j]))
+        correction3 = -(np.sqrt(2)) * (A ** (3 / 2)) * (dz_omega[j] * np.sqrt(z[j + 1] - z[j]))
         # 6) F(i) = 2*k*(correction1 + correction2 + correction3 + integral)
         force[j] = 2 * k * (correction1 + correction2 + correction3 + integral)
 
