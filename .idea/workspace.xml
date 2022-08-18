@@ -5,6 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="13a8a170-7628-4f49-9877-dd61de190cf3" name="Changes" comment="V0.1">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_Full_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_Full_VsZ289_1_ON_290_1_OFF.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_and_dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_and_dfVsZ289_1_ON_290_1_OFF.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_short_range_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_short_range_VsZ289_1_ON_290_1_OFF.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/dfVsZ289_1_ON_290_1_OFF.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/load_spec.py" beforeDir="false" afterPath="$PROJECT_DIR$/load_spec.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/spmUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/spmUtils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -98,7 +104,7 @@
       <workItem from="1660235192412" duration="3325000" />
       <workItem from="1660250625749" duration="4066000" />
       <workItem from="1660759706247" duration="7285000" />
-      <workItem from="1660837798884" duration="11715000" />
+      <workItem from="1660837798884" duration="13970000" />
     </task>
     <task id="LOCAL-00001" summary="Test">
       <created>1660235289542</created>

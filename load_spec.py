@@ -6,7 +6,12 @@ import seaborn as sns
 from spmUtils import *
 import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
-sns.set_theme(style='white')
+sns.set(style="ticks", context="talk")
+sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
+
+#plt.style.use("dark_background")
+
+
 
 # Loading the data from the csv file and then it is calculating the force for each spectra.
 folder_path = "/media/captainbroccoli/DATA/2022-07-17/"

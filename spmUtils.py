@@ -11,9 +11,15 @@ import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
+
+# Hex color for graphs
+color_map = {"green": "#90EE90", "yellow": "#FFDB58" ,"red": "#FF5733", "blue": "#3c59ff", "white": "#FFFFFF.", "purple": "#A020F0"}
+
+
+
 def plot_curve_list(curve_list, X, save=True, title="Title" , name_x="X",name_y="Y", unit_x="[X]", unit_y="[Y]",folder_name="curves"):
 
-    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+    figure, axis = plt.subplots(1,1,figsize=(10, 6), sharex=True)
 
     for curve in curve_list:
         sns.lineplot(ax=axis, x=X, y=curve)
@@ -46,15 +52,16 @@ def get_matrix_image(image_path):
 
 def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z,save=False, name="dfvsZ"):
 
-    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+    figure, axis = plt.subplots(1,1,figsize=(10, 7), sharex=True)
 
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color='#77DD77')
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color='#fdfd96')
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color='#ff6961')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color=color_map["green"],label="df ON trace")
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"],label="df ON retrace")
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"],label="df OFF")
 
     axis.set_title("df (ON and OFF) vs Z")
     axis.set_xlabel("Z[nm]")
     axis.set_ylabel("df[Hz]")
+    axis.legend(loc=0)
 
 
     if save == True:
@@ -73,16 +80,17 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z,save=False, name="dfvsZ"):
 
 def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=False, name="ForceVsZ"):
 
-    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+    figure, axis = plt.subplots(1,1,figsize=(10, 7), sharex=True)
 
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace* 10 ** 12, color='#77DD77')
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace* 10 ** 12, color='#fdfd96')
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF* 10 ** 12, color='#ff6961')
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace* 10 ** 12, color=color_map["green"],label="force trace")
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace* 10 ** 12, color=color_map["yellow"],label="force retrace")
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF* 10 ** 12, color=color_map["red"],label="force off")
 
 
-    axis.set_title("Force (ON and OFF) vs Z")
+    axis.set_title("Force(ON) and Force(OFF) Vs Z")
     axis.set_xlabel("Z[nm]")
     axis.set_ylabel("Force [pN]")
+    axis.legend(loc=0)
 
 
     if save == True:
@@ -100,15 +108,15 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=False
 
 
 def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ"):
-    figure, axis = plt.subplots(1, 1, figsize=(10, 5), sharex=True)
+    figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
-    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 12, color='#77DD77')
-    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 12, color='#fdfd96')
+    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 12, color=color_map["green"],label="force diff trace")
+    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 12, color=color_map["yellow"],label="force diff retrace")
 
     axis.set_title("Force (ON - OFF) vs Z")
     axis.set_xlabel("Z[nm]")
     axis.set_ylabel("Force [pN]")
-
+    axis.legend(loc=0)
     if save == True:
         pwd = os.getcwd()
         directory_path = "force_graphs"
@@ -125,23 +133,25 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace,df_off,z_force,z_df, save=False, name="ForceVsZ"):
 
 
-    figure, axis = plt.subplots(1, 2, figsize=(20, 5), sharex=True)
+    figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
 
-    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_trace * 10 ** 12, color='#2388E0')
-    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_retrace * 10 ** 12, color='#FF6961')
+    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_trace * 10 ** 12, color=color_map["green"], label="force trace")
+    sns.lineplot(ax=axis[0], x=z_force*10 ** 9, y=force_retrace * 10 ** 12, color=color_map["yellow"],label="force retrace")
 
     axis[0].set_title("Force (ON - OFF) vs Z")
     axis[0].set_xlabel("Z[nm]")
     axis[0].set_ylabel("Force[pN]")
+    axis[0].legend(loc=0)
 
-    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_trace, color='#FF6961')
-    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_retrace, color='#FF6961')
-    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_off, color='#FF6961')
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_trace, color=color_map["green"], label="df trace")
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_retrace, color=color_map["yellow"],label="df retrace")
+    sns.lineplot(ax=axis[1], x=z_df*10 ** 9, y=df_off, color=color_map["red"],label="df off")
 
     axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z")
     axis[1].set_xlabel("Z[nm]")
     axis[1].set_ylabel("df[Hz]")
-    
+    axis[1].legend(loc=0)
+
     if save == True:
         pwd=os.getcwd()
         force_dir_graphs = "force_graphs"
