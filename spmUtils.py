@@ -11,6 +11,28 @@ import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
+def plot_curve_list(curve_list, X, save=True, title="Title" , name_x="X",name_y="Y", unit_x="[X]", unit_y="[Y]",folder_name="curves"):
+
+    figure, axis = plt.subplots(1,1,figsize=(10, 5), sharex=True)
+
+    for curve in curve_list:
+        sns.lineplot(ax=axis, x=X, y=curve)
+
+    axis.set_title(f"{title}")
+    axis.set_xlabel(f"{name_x}{unit_x}")
+    axis.set_ylabel(f"{name_y}{unit_y}")
+
+    if save == True:
+        pwd = os.getcwd()
+        if os.path.isdir(f"{pwd}/{folder_name}") == False:
+            os.mkdir(f"{pwd}/{folder_name}")
+        else:
+            pass
+        plt.savefig(fname=f"{pwd}/{folder_name}/{name_y}Vs{name_x}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+    else:
+        pass
+
+    plt.show()
 
 def get_matrix_image(image_path):
     mtrx_data = access2thematrix.MtrxData()
