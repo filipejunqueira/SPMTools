@@ -5,18 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="13a8a170-7628-4f49-9877-dd61de190cf3" name="Changes" comment="V0.1">
+      <change afterPath="$PROJECT_DIR$/plot_severalcurves_same_plot.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/plot_single_curve.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force_graphs/Force_Full_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_Full_VsZ289_1_ON_290_1_OFF.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force_graphs/Force_and_dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_and_dfVsZ289_1_ON_290_1_OFF.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force_graphs/Force_short_range_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/Force_short_range_VsZ289_1_ON_290_1_OFF.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/force_graphs/dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" afterPath="$PROJECT_DIR$/force_graphs/dfVsZ289_1_ON_290_1_OFF.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/load_spec.py" beforeDir="false" afterPath="$PROJECT_DIR$/load_spec.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_Full_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_and_dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/Force_short_range_VsZ289_1_ON_290_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/force_graphs/dfVsZ289_1_ON_290_1_OFF.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/load_spec.py" beforeDir="false" afterPath="$PROJECT_DIR$/force_from_cvs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spec_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/spec_on_off_list.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/spmUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/spmUtils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_spmUtils.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -42,18 +54,22 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/test.py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/plot_severalcurves_same_plot.py" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="python.debugger.dataview.coloredbydefault" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
-  <component name="RunManager" selected="Python.load_spec">
+  <component name="RunManager" selected="Python.force_from_cvs">
     <configuration name="Test" type="PythonConfigurationType" factoryName="Python">
       <module name="SPMTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/def/bin/python" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
@@ -69,7 +85,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="load_spec" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="force_from_cvs" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="SPMTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -79,7 +95,51 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/load_spec.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/force_from_cvs.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="plot_severalcurves_same_plot" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="SPMTools" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/def/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plot_severalcurves_same_plot.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="plot_single_curve" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="SPMTools" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/envs/def/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/plot_single_curve.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -89,8 +149,10 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.load_spec" />
       <item itemvalue="Python.Test" />
+      <item itemvalue="Python.force_from_cvs" />
+      <item itemvalue="Python.plot_single_curve" />
+      <item itemvalue="Python.plot_severalcurves_same_plot" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -104,7 +166,8 @@
       <workItem from="1660235192412" duration="3325000" />
       <workItem from="1660250625749" duration="4066000" />
       <workItem from="1660759706247" duration="7285000" />
-      <workItem from="1660837798884" duration="13970000" />
+      <workItem from="1660837798884" duration="42621000" />
+      <workItem from="1660986076287" duration="1335000" />
     </task>
     <task id="LOCAL-00001" summary="Test">
       <created>1660235289542</created>
