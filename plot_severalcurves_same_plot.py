@@ -4,13 +4,18 @@ import matplotlib.pyplot as plt
 import access2thematrix
 import seaborn as sns
 from spmUtils import *
+from matplotlib import cm
 import csv
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 sns.set(style="ticks", context="talk")
 sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
 
-folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
-prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+#folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
+folder_path = "/media/captainbroccoli/DATA/2022-08-07/"
+
+#prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+
 sufix = ".Df(Z)_mtrx"
 csv_list = load_spec_list_from_cvs()
 csv_list_temp = []
@@ -25,6 +30,9 @@ palette = sns.color_palette(['blue'], len(np.unique(np.asarray(sorted_list))))
 
 figure, axis = plt.subplots(1,1,figsize=(14, 7), sharex=True)
 
+#color_trace = 3554368 # black/grey to blue
+#color_retrace = 16758272 # orange to pink
+
 
 for idx,item in enumerate(sorted_list):
 
@@ -38,10 +46,18 @@ for idx,item in enumerate(sorted_list):
     x_retrace = curve_retrace.X
     y_retrace = curve_retrace.Y
 
+    #color_trace_int = hex(color_trace)[2:]
+    #color_retrace_int = hex(color_retrace)[2:]
 
-    sns.lineplot(ax=axis, x=x_trace*10**9, y=y_trace,label=f"{item[1]}")
-    sns.lineplot(ax=axis, x=x_retrace*10**9, y=y_retrace,label=f"{item[1]}")
 
+    #sns.lineplot(ax=axis, x=x_trace*10**9, y=y_trace,color=f"#{color_trace_int}",alpha=1)
+    #sns.lineplot(ax=axis, x=x_retrace*10**9, y=y_retrace,color=f"#{color_retrace_int}",alpha=1)
+
+    sns.lineplot(ax=axis, x=x_trace * 10 ** 9, y=y_trace, color="green", alpha=1)
+    sns.lineplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, color=f"yellow", alpha=1)
+
+    #color_trace = color_trace + 12
+    #color_retrace = color_retrace +12
 
     #sns.lineplot(ax=axis, x=x_trace*10**9, y=y_trace)
     #sns.lineplot(ax=axis, x=x_retrace*10**9, y=y_retrace)
@@ -55,7 +71,7 @@ unit_y = "[Hz]"
 axis.set_title(f"{title}")
 axis.set_xlabel(f"{name_x}{unit_x}")
 axis.set_ylabel(f"{name_y}{unit_y}")
-axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
+#axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
 
 pwd = os.getcwd()
 
