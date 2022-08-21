@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="13a8a170-7628-4f49-9877-dd61de190cf3" name="Changes" comment="V0.1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/curves/92_1to115_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/curves/92_1to116_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_severalcurves_same_plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_severalcurves_same_plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_single_curve.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_single_curve.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/spec_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/spec_list.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/spec_on_off_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/spec_on_off_list.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +155,7 @@
       <workItem from="1660250625749" duration="4066000" />
       <workItem from="1660759706247" duration="7285000" />
       <workItem from="1660837798884" duration="42621000" />
-      <workItem from="1660986076287" duration="13703000" />
+      <workItem from="1660986076287" duration="14313000" />
     </task>
     <task id="LOCAL-00001" summary="Test">
       <created>1660235289542</created>
