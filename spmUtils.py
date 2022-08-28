@@ -70,12 +70,19 @@ def get_matrix_image(image_path):
     return im, message, message_im
 
 
-def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ"):
+def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", retrace=False, off=True):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
     sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color=color_map["green"], label="df ON trace")
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"], label="df ON retrace")
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"], label="df OFF")
+    if retrace == True:
+        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"], label="df ON retrace")
+    elif retrace == False:
+        pass
+
+    if off == True:
+        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"], label="df OFF")
+    elif off == False:
+        pass
 
     axis.set_title("df (ON and OFF) vs Z")
     axis.set_xlabel("Z[nm]")
@@ -96,21 +103,26 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ"):
     plt.show()
 
 
-def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ"):
+def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace * 10 ** 12, color=color_map["green"], label="force trace")
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace * 10 ** 12, color=color_map["yellow"],
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace * 10 ** 9, color=color_map["green"], label="force trace")
+    if retrace == True:
+        sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace * 10 ** 9, color=color_map["yellow"],
                  label="force retrace")
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF * 10 ** 12, color=color_map["red"], label="force off")
+        axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(Force_ON_retrace) * 10 ** 9, 1)}nN",
+                  transform=axis.transAxes)
+    elif retrace == False:
+        pass
+
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF * 10 ** 9, color=color_map["red"], label="force off")
 
     axis.set_title("Force(ON) and Force(OFF) Vs Z")
     axis.set_xlabel("Z[nm]")
-    axis.set_ylabel("Force [pN]")
+    axis.set_ylabel("Force [nN]")
 
-    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 12, 0)}pN", transform=axis.transAxes)
-    axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(Force_ON_retrace) * 10 ** 12, 0)}pN",
-              transform=axis.transAxes)
+    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 9, 1)}nN", transform=axis.transAxes)
+
 
     axis.legend(loc=0)
 
@@ -128,22 +140,27 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
     plt.show()
 
 
-def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ"):
+def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
-    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 12, color=color_map["green"],
+    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 9, color=color_map["green"],
                  label="force diff trace")
-    sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 12, color=color_map["yellow"],
+    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(force_diff_trace) * 10 ** 9, 1)}nN",
+              transform=axis.transAxes)
+    if retrace == True:
+        sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 9, color=color_map["yellow"],
                  label="force diff retrace")
+
+        axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(force_diff_retrace) * 10 ** 12, 1)}nN",
+                  transform=axis.transAxes)
+    elif retrace == False:
+        pass
 
     axis.set_title("Force (ON - OFF) vs Z")
     axis.set_xlabel("Z[nm]")
-    axis.set_ylabel("Force [pN]")
+    axis.set_ylabel("Force [nN]")
 
-    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(force_diff_trace) * 10 ** 12, 0)}pN",
-              transform=axis.transAxes)
-    axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(force_diff_retrace) * 10 ** 12, 0)}pN",
-              transform=axis.transAxes)
+
 
     axis.legend(loc=0)
     if save == True:
@@ -161,26 +178,29 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
 
 
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off, z_force, z_df, save=False,
-                       name="ForceVsZ"):
+                       name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
 
-    sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_trace * 10 ** 12, color=color_map["green"],
+    sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_trace * 10 ** 9, color=color_map["green"],
                  label="force trace")
-    sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_retrace * 10 ** 12, color=color_map["yellow"],
+    axis[0].text(0.5, 0.5,
+                 f"min F (trace): {np.round(np.min(force_trace) * 10 ** 9, 1)}nN", transform=axis[0].transAxes)
+    if retrace == True:
+        sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_retrace * 10 ** 9, color=color_map["yellow"],
                  label="force retrace")
+
+        axis[0].text(0.5, 0.4,f"min F (retrace): {np.round(np.min(force_retrace) * 10 ** 9, 1)}nN", transform=axis[0].transAxes)
+    elif retrace == False:
+        pass
 
     axis[0].set_title("Force (ON - OFF) vs Z")
     axis[0].set_xlabel("Z[nm]")
-    axis[0].set_ylabel("Force[pN]")
-    axis[0].text(0.5, 0.5,
-                 f"min F (trace): {np.round(np.min(force_trace) * 10 ** 12, 0)}pN", transform=axis[0].transAxes)
-    axis[0].text(0.5, 0.4,
-                 f"min F (retrace): {np.round(np.min(force_retrace) * 10 ** 12, 0)}pN", transform=axis[0].transAxes)
+    axis[0].set_ylabel("Force[nN]")
     axis[0].legend(loc=0)
 
     sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_trace, color=color_map["green"], label="df trace")
-    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_retrace, color=color_map["yellow"], label="df retrace")
     sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_off, color=color_map["red"], label="df off")
+    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_retrace, color=color_map["yellow"], label="df retrace")
 
     axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z")
     axis[1].set_xlabel("Z[nm]")

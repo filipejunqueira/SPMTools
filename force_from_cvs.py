@@ -14,7 +14,7 @@ plt.style.use("dark_background")
 
 
 # Loading the data from the csv file and then it is calculating the force for each spectra.
-folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
+folder_path = "/media/filipejunqueira/DATA/2022-07-17/"
 prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_1.Df(Z)_mtrx"
 csv_list = load_on_off_spec_list_from_cvs()
@@ -122,12 +122,12 @@ for idx,item in enumerate(csv_list):
     z_force = z_on
     z_df = df_diff_trace["Z"]
 
-    plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True)
-    plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    plot_forces_and_df(force_diff_trace_filtered,force_diff_retrace_filtered,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ_{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True)
+    plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=True)
+    plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
+    plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
+    plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False)
+    plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
+    plot_forces_and_df(force_diff_trace_filtered,force_diff_retrace_filtered,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ_{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False)
 
 
 
