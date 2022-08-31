@@ -8,30 +8,212 @@ from scipy.optimize import curve_fit
 import os
 import csv
 
-sns.set()  # Setting seaborn as default style even if use only matplotlib
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
 
 # Hex color for graphs
-color_map = {"green": "#90EE90", "yellow": "#FFDB58", "red": "#FF5733", "blue": "#3c59ff", "white": "#FFFFFF.",
-             "purple": "#A020F0"}
+color_map = {"green": "#90EE90", "dark_green": "#95BA61" , "orange": "#FFAB00", "dark_yellow": "#8B8000", "yellow": "#FFDB58", "red": "#FF5733", "blue": "#3c59ff", "white": "#FFFFFF.",
+             "purple": "#7b40c9", "pink": "#FFB490", "black": "#171717"}
+
+
+# THIS NEEDS TO BE CHANGE IF THE PROJECT FOLDER CHANGES!
+
+root_path = "/media/captainbroccoli/DATA/"
+project_folder_name = "2022-08-12"
+prefix = "20220812-124820_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+sufix = "_mtrx"
+
+project_folder_path = os.path.join(root_path,project_folder_name)
+
+# USEFUL FOR SINGLE PLOT   ############################################################################################
+
+def create_file_number_list(file_id,n_files):
+    """
+    This function takes a file id and the number of files in the directory and returns a list of file numbers
+
+    :param file_id: the file number you want to start with
+    :param n_files: the number of files you want to create
+    Examples: 37 and 5 will generate ['37_1', '37_2', '37_3', '37_4', '37_5']
+    """
+    file_number_list=[]
+    for i in range(n_files):
+        file_number_list.append(f"{file_id}_{i+1}")
+    return file_number_list
+
+
+def average_curves(file_number_list,type,direction=0):
+    """
+    It takes a list of file numbers, a type of file, and a direction (0 or 1) and returns the average of the curves in the
+    files
+
+    :param file_number_list: a list of the file numbers you want to average
+    :param type: is the type of file you want to average
+    :param direction: 0 = forward, 1 = backward, defaults to 0 (optional)
+    :return: The x and y values of the averaged curve.
+    """
+    path = os.path.join(project_folder_path,f"{prefix}{file_number_list[0]}.{type}{sufix}")
+
+    #I need to know how
+    #path = f"{project_folder_path}{prefix}{file_number_list[0]}.{type}{sufix}"
+    mtrx_data = access2thematrix.MtrxData()
+    data_file = f'{path}'
+    traces, message = mtrx_data.open(data_file)
+    curve_trace, message = mtrx_data.select_curve(traces[direction])
+    array_lengh = len(Spec_curve(curve_trace).X)
+
+    x = np.zeros(array_lengh)
+    y = np.zeros(array_lengh)
+
+
+    for number in file_number_list:
+        # this path needs to be global.
+        path = os.path.join(project_folder_path, f"{prefix}{number}.{type}{sufix}")
+        print(f"Loading: {path}")
+        mtrx_data = access2thematrix.MtrxData()
+        data_file = f'{path}'
+        traces, message = mtrx_data.open(data_file)
+        curve_trace, message = mtrx_data.select_curve(traces[direction])
+        x = Spec_curve(curve_trace).X
+        y = y + Spec_curve(curve_trace).Y
+
+    y = y / len(file_number_list)
+
+    return x, y
+
+
+def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100):
+
+    file_number_list = create_file_number_list(file_id, n_files)
+    filtered_str = ""
+
+    x, y = average_curves(file_number_list, type, direction=0)
+    x = x[slice_start:slice_end]
+    y = y[slice_start:slice_end]
+
+    print(f"Curves {file_number_list} of type: {type} have been averaged ")
+    print(f"Attention: I'm slicing the graph from {slice_start} to {slice_end} points. Make sure this is what you want.")
+
+    if filter == True:
+        y = savgol_filter(y, filter_window, filter_order)
+        filtered_str = f"filter_w{filter_window}o{filter_order}"
+
+    if plot_retrace==True:
+        x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
+        x_retrace = x_retrace[slice_start:slice_end]
+        y_retrace = y_retrace[slice_start:slice_end]
+        print(f"Attention - Retraces are also being computed")
+        if filter == True:
+            y = savgol_filter(y, filter_window, filter_order)
+            filtered_str = f"filter_w{filter_window}o{filter_order}"
+
+    figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
+
+    if type == "Aux2(V)":
+
+        sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
+        sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None", s=marker_size)
+
+        if plot_retrace == True:
+            sns.lineplot(ax=axis, x=x_retrace, y=y_retrace, color=f"{color_map['dark_yellow']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['orange']}", facecolor="None",
+                            s=marker_size)
+
+        title = f"dI/dV"
+        name_x = "Bias"
+        name_y = "dI/dV"
+        unit_x = "[V]"
+        unit_y = "[arb. units]"
+
+        axis.set_title(f"{title}", fontsize=fontsize)
+        axis.set_xlabel(f"{name_x} {unit_x}", fontsize=(fontsize - 2))
+        axis.set_ylabel(f"{name_y} {unit_y}", fontsize=(fontsize - 2))
+        plt.xticks(fontsize=(fontsize - 2))
+        plt.yticks([])
+
+    elif type == "Df(V)":
+
+        sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
+        sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None", s=marker_size)
+
+        title = f"Df(V)"
+        name_x = "Bias"
+        name_y = "Df(V)"
+        unit_x = "[V]"
+        unit_y = "[Hz]"
+
+        axis.set_title(f"{title}", fontsize=fontsize)
+        axis.set_xlabel(f"{name_x} {unit_x}", fontsize=(fontsize - 2))
+        axis.set_ylabel(f"{name_y} {unit_y}", fontsize=(fontsize - 2))
+        plt.xticks(fontsize=(fontsize - 2))
+        plt.yticks(fontsize=(fontsize - 2))
+
+    elif type == "Df(Z)":
+
+        x, y = average_curves(file_number_list, type, direction=0)
+        sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace",alpha=1)
+        sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}", facecolor="None", s=marker_size)
+
+
+        if plot_retrace == True:
+            x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
+            sns.lineplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, color=color_map["yellow"], label="df retrace", alpha=1)
+            sns.scatterplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=f"{color_map['dark_yellow']}", facecolor="None",
+                            s=marker_size)
+
+        title = f"Df(Z)"
+        name_x = "Z"
+        name_y = "Df(Z)"
+        unit_x = "[nm]"
+        unit_y = "[Hz]"
+
+        axis.set_title(f"{title}", fontsize=fontsize)
+        axis.set_xlabel(f"{name_x} {unit_x}", fontsize=(fontsize - 2))
+        axis.set_ylabel(f"{name_y} {unit_y}", fontsize=(fontsize - 2))
+        plt.xticks(fontsize=(fontsize - 2))
+        plt.yticks(fontsize=(fontsize - 2))
+        axis.legend(loc=0)
+
+
+
+    pwd = os.getcwd()
+    name = f"{type}_{project_folder_name}--{file_id}_{n_files}{filtered_str}"
+    save_dir_name = "single_curve_graphs"
+    save_dir= os.path.join(pwd,save_dir_name)
+    if os.path.isdir(save_dir) == False:
+        os.mkdir(save_dir)
+    else:
+        pass
+
+    image_name = os.path.join(pwd,save_dir_name,name)
+    plt.savefig(fname=f"{image_name}.svg", facecolor='auto', edgecolor='auto', transparent=True)
+    plt.show()
+
+        # axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
+    return True
+
+
+
+# Object spec curve   ############################################################################################
 
 
 # The class Spec_curve takes a curve object from the AFM_data class and creates a dataframe with the Z and deltaF values
 class Spec_curve:
     def __init__(self, curve):
         self.meta = curve.referenced_by
-        self.X = curve.data[0]
-        self.Y = curve.data[1]
+        self.X = curve.data[0] #Parameter X have the x vector as numpy array
+        self.Y = curve.data[1] #Parameter Y have the y vector as numpy array
 
-        # this section makes sure that the z which is the first vector of (Z) is always crescent.
-        # If it is not it will flip the self.trace or self.retrace in order to make it crescent in Z.
+        # this section makes sure that the X which is the first vector of (X) is always crescent.
+        # If it is not it will flip the self.trace or self.retrace in order to make it crescent in X.
+        # THis could be in theory anything.
+
         if self.X[0] < self.X[-1]:
             pass
         elif self.X[0] > self.X[-1]:
             self.X = np.flipud(self.X)
             self.Y = np.flipud(self.Y)
 
+        # THis needs to be changed. But in principle it assumes this is deltaF and Z collums in the dataframe.
         self.data_framedf = pd.DataFrame({'Z': self.X, 'deltaF': self.Y}, columns=['Z', 'deltaF'])
 
 
@@ -78,7 +260,6 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
         sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"], label="df ON retrace")
     elif retrace == False:
         pass
-
     if off == True:
         sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"], label="df OFF")
     elif off == False:
@@ -120,7 +301,6 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
     axis.set_title("Force(ON) and Force(OFF) Vs Z")
     axis.set_xlabel("Z[nm]")
     axis.set_ylabel("Force [nN]")
-
     axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 9, 1)}nN", transform=axis.transAxes)
 
 

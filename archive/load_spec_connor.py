@@ -1,10 +1,5 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import access2thematrix
-import seaborn as sns
-from spmUtils_connor import *
-import csv
+from archive.spmUtils_connor import *
+
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 
 # Loading the data from the csv file and then it is calculating the force for each spectra.

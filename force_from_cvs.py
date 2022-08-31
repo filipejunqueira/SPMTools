@@ -14,7 +14,7 @@ plt.style.use("dark_background")
 
 
 # Loading the data from the csv file and then it is calculating the force for each spectra.
-folder_path = "/media/filipejunqueira/DATA/2022-07-17/"
+folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
 prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_1.Df(Z)_mtrx"
 csv_list = load_on_off_spec_list_from_cvs()

@@ -59,7 +59,7 @@ def plot_forces_short_range(Force_ON_trace, Force_ON_retrace, Force_OFF, z,save=
     
     if save == True:
         pwd=os.getcwd()
-        force_dir_graphs = "force_graphs"
+        force_dir_graphs = "../force_graphs"
         if os. path.isdir(f"{pwd}/{force_dir_graphs}") == False:
             os.mkdir(f"{pwd}/{force_dir_graphs}")
         else:
@@ -124,8 +124,8 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}"):
 
 def shift_off_curve(df,z_off,z_on,f0=32768, k=1800,A=11.8E-12, simple = False):
 
-    params = lm_curve_fitting(df,z_off,f0,k,A,simple)
-    print(params)
+    #params = lm_curve_fitting(df,z_off,f0,k,A,simple)
+    #print(params)
     E,P,sigma = fit_lennard_jones(df,z_off+abs(np.min(z_off)) + 0.23E-9,f0,k,A,simple)
     if simple == False:
         df = lennard_jones_complex(z_off+abs(np.min(z_on)) + 0.23E-9,E,P,sigma,f0,k,A)
@@ -137,11 +137,29 @@ def fit_lennard_jones(df,z,f0,k,A,simple):
     """function for finding the optimum parameters to fit a lennard jones to a z vs df data set"""
     #selects a simple or more complex lennard jones model before calculating and then returning the accosiated parameters
     if simple == False:
-        popt, _ = curve_fit(lambda z,E,P,sigma: lennard_jones_complex(z,E,P,sigma,f0,k,A),df,z,p0=(0.371E-18,8,0.235E-9),bounds = ((-np.inf,1,-np.inf),(np.inf,8,np.inf)))
+        P=0.5
+        popt, _ = curve_fit(lambda z,E,sigma: lennard_jones_complex(z,E,P,sigma,f0,k,A),z,df,p0=(0.371E-18,0.235E-9))
+        E,sigma = popt
+        popt, _ = curve_fit(lambda z,P : lennard_jones_complex(z,E,P,sigma,f0,k,A),z,df,p0=(P),bounds = ((0.5),(3.0)))
+        P = popt
+        for i in range(800):
+            popt, _ = curve_fit(lambda z,E,sigma: lennard_jones_complex(z,E,P,sigma,f0,k,A),z,df,p0=(E,sigma))
+            E,sigma = popt
+            popt, _ = curve_fit(lambda z,P : lennard_jones_complex(z,E,P,sigma,f0,k,A),z,df,p0=(P),bounds = ((0.1),(3.0)))
+            P = popt
     elif simple == True:
-        popt, _ = curve_fit(lambda z,E,P,sigma: lennard_jones_simple(z,E,P,sigma,f0,k,A),z,df,p0=(0.371E-18,1.0,0.235E-9),bounds = ((-np.inf,0.5,-np.inf),(np.inf,3.0,np.inf)))
-    print(popt)
-    return popt
+        P=0.8
+        popt, _ = curve_fit(lambda z,E,sigma: lennard_jones_simple(z,E,P,sigma,f0,k,A),z,df,p0=(0.371E-18,0.235E-9))
+        E,sigma = popt
+        popt, _ = curve_fit(lambda z,P : lennard_jones_simple(z,E,P,sigma,f0,k,A),z,df,p0=(P),bounds = ((0.5),(3.0)))
+        P = popt
+        for i in range(800):
+            popt, _ = curve_fit(lambda z,E,sigma: lennard_jones_simple(z,E,P,sigma,f0,k,A),z,df,p0=(E,sigma))
+            E,sigma = popt
+            popt, _ = curve_fit(lambda z,P : lennard_jones_simple(z,E,P,sigma,f0,k,A),z,df,p0=(P),bounds = ((0.1),(3.0)))
+            P = popt
+    print(E,sigma,P)
+    return E,P,sigma
 
 def lm_curve_fitting(df,z,f0,k,A,simple):
     if simple == False:

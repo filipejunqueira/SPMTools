@@ -9,7 +9,7 @@ from scipy.signal import savgol_filter
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 sns.set(style="ticks", context="talk")
 
-folder_path = "/media/filipejunqueira/DATA/2022-07-29/"
+folder_path = "/media/captainbroccoli/DATA/2022-07-29/"
 prefix = "20220729-095353_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 type = "Aux2(V)"
 sufix = "_mtrx"
@@ -29,9 +29,11 @@ for number in file_number:
     x = Spec_curve(curve_trace).X
     y = y + Spec_curve(curve_trace).Y
 
-y = y/len(file_number)
+y = y/len(file_numbe)
+
 x = x[:500]
 y = y[:500]
+
 figure, axis = plt.subplots(1,1,figsize=(12, 12), sharex=True)
 
 sns.lineplot(ax=axis, x=x, y=y, color="#3386FF", alpha=1)
