@@ -110,12 +110,16 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
 
     if type == "Aux2(V)":
 
-        sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
-        sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None", s=marker_size)
+        if plot_retrace == False:
+            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None", s=marker_size)
 
         if plot_retrace == True:
+            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None",
+                            s=marker_size,label ="trace")
             sns.lineplot(ax=axis, x=x_retrace, y=y_retrace, color=f"{color_map['dark_yellow']}", alpha=0.1)
-            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['orange']}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['orange']}", facecolor="None",label ="retrace",
                             s=marker_size)
 
         title = f"dI/dV"
@@ -132,8 +136,17 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
 
     elif type == "Df(V)":
 
-        sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
-        sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None", s=marker_size)
+        if plot_retrace == False:
+            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None", s=marker_size)
+
+        if plot_retrace == True:
+            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None",
+                            s=marker_size, label ="trace")
+            sns.lineplot(ax=axis, x=x_retrace, y=y_retrace, color=f"{color_map['black']}", alpha=0.1)
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['pink']}", facecolor="None",
+                            s=marker_size, label ="retrace")
 
         title = f"Df(V)"
         name_x = "Bias"
@@ -150,11 +163,16 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
     elif type == "Df(Z)":
 
         x, y = average_curves(file_number_list, type, direction=0)
-        sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace",alpha=1)
-        sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}", facecolor="None", s=marker_size)
+
+        if plot_retrace == False:
+            sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace",alpha=1)
+            sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}", facecolor="None", s=marker_size)
 
 
         if plot_retrace == True:
+            sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace", alpha=1)
+            sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}",
+                            facecolor="None", s=marker_size)
             x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
             sns.lineplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, color=color_map["yellow"], label="df retrace", alpha=1)
             sns.scatterplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=f"{color_map['dark_yellow']}", facecolor="None",

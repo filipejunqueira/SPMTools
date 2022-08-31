@@ -20,11 +20,12 @@ marker_size = 150
 
 type = "Df(Z)"
 figsize = (20,14)
-file_id = 34
+file_id = 37
 n_files = 1
-
+plot_retrace = False
+end = 512
 # If there is no retrace it will give out an error!!!
 
-plot_single_curve(file_id, n_files, plot_retrace=True, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize)
+plot_single_curve(file_id, n_files, plot_retrace=plot_retrace, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end)
 
 print("I owe you nothing")
