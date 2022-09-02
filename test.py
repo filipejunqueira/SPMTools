@@ -4,103 +4,70 @@ import matplotlib.pyplot as plt
 import access2thematrix
 import seaborn as sns
 from spmUtils import *
+from scipy.signal import savgol_filter
+from lmfit import Model
+from lmfit.models import LorentzianModel, LinearModel, VoigtModel, ExponentialModel
 import csv
+
+root_path = "/media/captainbroccoli/DATA/"
+project_folder_name = "2022-08-12"
+prefix = "20220812-124820_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+sufix = "_mtrx"
+
+
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 sns.set(style="ticks", context="talk")
-sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
-plt.style.use("dark_background")
+
+fontsize = 30
+marker_size = 150
+#sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
 
 
-# Loading the data from the csv file and then it is calculating the force for each spectra.
-folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
-prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
-sufix = ".Df(Z)_mtrx"
-csv_list = load_on_off_spec_list_from_cvs()
+type = "Aux2(V)"
+figsize = (20,14)
+file_id = 37
+n_files = 1
+plot_retrace = False
+end = 512
+# If there is no retrace it will give out an error!!!
 
-path_on = []
-path_off = []
-results = pd.DataFrame()
+#plot_single_curve(file_id, n_files, plot_retrace=plot_retrace, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end)
+path = os.path.join(project_folder_path, f"{prefix}{file_id}_{n_files}.{type}{sufix}")
+print(path)
+spec = import_spectra(path)
+x = spec.X
+y = spec.Y
+x = x[:end]
+y = y[:end]
 
+linear_mod =LinearModel()
+parameters = linear_mod.make_params(intercept=y.min(), slope=0)
 
+exp_mod = ExponentialModel(prefix='exp_')
+parameters.update(exp_mod.guess(y,x=x))
 
+lorentzian_mod =LorentzianModel()
+parameters.update(lorentzian_mod.make_params())
 
+voigt_mod =VoigtModel()
+parameters.update(voigt_mod.guess(y,x=x))
 
-for idx,item in enumerate(csv_list):
+model =  lorentzian_mod + exp_mod
 
-    path_on = f"{folder_path}{prefix}{item[0]}{sufix}"
-    path_off = f"{folder_path}{prefix}{item[1]}{sufix}"
-    print(path_on)
-    print(path_off)
+init = model.eval(parameters, x=x)
+result = model.fit(y, x=x, params=parameters)
+print(result.fit_report())
 
+y_bestfit = result.best_fit
 
-    curve_ON_trace, curve_ON_retrace = import_spectra(path_on)
-    curve_OFF_trace, curve_OFF_retrace = import_spectra(path_off)
+plt.plot(x, y, 'o')
+plt.plot(x, y_bestfit, '-', label='best fit', )
 
-    # THESE ARE THE 2 ON data frames in which the force will be calculated
-    dfON_trace = curve_ON_trace.data_framedf
-    dfON_retrace = curve_ON_retrace.data_framedf
+plt.legend()
+plt.show()
 
-    # OFF trace and retrace should be the same. Therefore, we will take the average between them.
-
-    dfOFF_trace = curve_OFF_trace.data_framedf
-    dfOFF_retrace = curve_OFF_retrace.data_framedf
-    dfOFF_temp = dfOFF_trace["deltaF"].add(dfOFF_retrace["deltaF"]) / 2
-
-
-    # Parameters for initializing the sjarvis devoconvolution
-
-    A = 0.21E-9
-    f0 = 24233
-    k = 1800
-
-    # checking if the fit_lennard_jones(z_on, z_off, df_off, A=0.2E-9, k=1800, f0=25000, simple=False): works:
-
-    z_off = curve_OFF_trace.X
-    z_on = curve_ON_trace.X
-    fitted_df_off, parameters_opt, parameters_pcov = fit_lennard_jones(z_on, z_off, dfOFF_temp, A=0.2E-9, k=1800, f0=25000,
-                                                                       simple=False)
-
-    dfOFF_temp=fitted_df_off
-    dfOFF = pd.DataFrame({'deltaF': dfOFF_temp, 'Z': dfOFF_trace['Z']})
-
-    # Data frames of the difference of frequency shifts
-
-    df_diff_trace_temp = dfON_trace["deltaF"].subtract(dfOFF["deltaF"])
-    df_diff_retrace_temp = dfON_retrace["deltaF"].subtract(dfOFF["deltaF"])
-
-    df_diff_trace = pd.DataFrame({'deltaF': df_diff_trace_temp, 'Z': dfON_trace['Z']})
-    df_diff_retrace = pd.DataFrame({'deltaF': df_diff_retrace_temp, 'Z': dfON_retrace['Z']})
+exponential = list(map(''.join, itertools.product(*zip("exponential".upper(), "exponential".lower()))))
+exponential.append(list(map(''.join, itertools.product(*zip("exp".upper(), "exp".lower())))))
 
 
-
-
-    # force calculation -> ON (2x) OFF(1 averaged) + difference (2x) = 5 forces in total.
-
-    force_ON_trace, z_on, _, _, _ = sjarvis_deconvolution(dfON_trace, A=A, f0=f0, k=k)
-    force_ON_retrace, _, _, _, _ = sjarvis_deconvolution(dfON_retrace, A=A, f0=f0, k=k)
-    force_OFF, z_off, _, _, _ = sjarvis_deconvolution(dfOFF, A=A, f0=f0, k=k)
-
-    force_diff_trace, _, _,_,_= sjarvis_deconvolution(df_diff_trace, A=A, f0=f0, k=k)
-    force_diff_retrace, _, _,_,_= sjarvis_deconvolution(df_diff_retrace, A=A, f0=f0, k=k)
-
-    # Result data frame receiving data.
-    results.insert(idx, f"{item[0]}Force_ON_trace", force_ON_trace, True)
-    results.insert(idx+1, f"{item[0]}Force_ON_retrace", force_ON_retrace, True)
-    results.insert(idx+2, f"{item[0]}Z_ON", z_on, True)
-    results.insert(idx+3, f"{item[1]}Force_OFF", force_OFF, True)
-    results.insert(idx+4, f"{item[1]}Z_OFF", z_off, True)
-    results.insert(idx+5, f"{item[0]}-{item[1]}Force_diff_trace", force_diff_trace, True)
-    results.insert(idx+6, f"{item[0]}-{item[1]}Force_diff_retrace", force_diff_retrace, True)
-
-    z_force = z_on
-    z_df = df_diff_trace["Z"]
-    #plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    #plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    #plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-    #plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True)
-
-
-
-
-
-print("Done, I owe you nothing!")
+print("I owe you nothing")

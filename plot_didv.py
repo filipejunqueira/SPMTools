@@ -5,6 +5,8 @@ import access2thematrix
 import seaborn as sns
 from spmUtils import *
 from scipy.signal import savgol_filter
+from lmfit import Model
+from lmfit.models import LorentzianModel, LinearModel, VoigtModel, ExponentialModel
 
 sns.set()  # Setting seaborn as default style even if use only matplotlib
 sns.set(style="ticks", context="talk")

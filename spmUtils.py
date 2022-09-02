@@ -7,6 +7,9 @@ from scipy.special import hyp2f1 as Fy
 from scipy.optimize import curve_fit
 import os
 import csv
+from lmfit.models import (StepModel,ExpressionModel, PolynomialModel, QuadraticModel, LorentzianModel, LinearModel, VoigtModel, ExponentialModel, GaussianModel, SkewedVoigtModel, SkewedGaussianModel, SplitLorentzianModel, PseudoVoigtModel, SkewedGaussianModel,LognormalModel,ExponentialGaussianModel)
+from lmfit import Model
+import itertools
 
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
@@ -80,8 +83,80 @@ def average_curves(file_number_list,type,direction=0):
 
     return x, y
 
+def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_curves=1, algo=""):
+    """
+    > This function takes in a set of x and y data, and a set of booleans that determine which models to fit to the data. It
+    then returns the fit parameters and the initial guess for the fit
 
-def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100):
+    :param x: the x-axis data
+    :param y: the data to fit
+    :param linear: True/False, defaults to False (optional)
+    :param exponential: y = a*exp(b*x), defaults to False (optional)
+    :param gaussian: Gaussian/normal distribution, defaults to False (optional)
+    :param lorentzian: , defaults to False (optional)
+    :param voigt: VoigtModel(), defaults to False (optional)
+    :return: The result of the fit and the initial guess.
+    """
+
+
+
+    def empty(x):
+        return 0
+
+    initial_model = Model(empty)
+    parameters = initial_model.make_params()
+
+    # generating every possible combination of exponential and linear string inputs
+    #exponential = list(map(''.join, itertools.product(*zip("exponential".upper(), "exponential".lower()))))
+    #exponential.append(list(map(''.join, itertools.product(*zip("exp".upper(), "exp".lower())))))
+
+
+    #background
+
+    if linear == True:
+
+        linear_mod = LinearModel(prefix='lin_')
+        parameters.update(linear_mod.guess(y, x=x))
+        initial_model = initial_model + linear_mod
+
+    if exponential == True:
+
+        exp_mod = ExponentialModel(prefix='exp_')
+        parameters.update(exp_mod.guess(y, x=x))
+        initial_model = initial_model + exp_mod
+
+    background = initial_model
+    final_model = background
+
+    for i in range(n_curves):
+
+        if fit_type == "lorentzian":
+
+            fit_model = LorentzianModel(prefix=f'lor_{i}')
+            parameters.update(fit_model.guess(y, x=x))
+            final_model = background + fit_model
+
+        elif fit_type == "voigt":
+
+            fit_model = VoigtModel(prefix=f'voi_{i}')
+            parameters.update(fit_model.guess(y, x=x))
+            final_model = background + fit_model
+
+        elif fit_type == "gaussian":
+
+            fit_model = GaussianModel(prefix=f'gauss_{i}')
+            parameters.update(fit_model.guess(y, x=x))
+            final_model = background + fit_model
+
+
+    init = final_model.eval(parameters, x=x)
+    result = final_model.fit(y, x=x, params=parameters, method="leastsq")
+
+    return result, background, init
+
+
+
+def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100, bestfit=True, y_fit= None, y_fit_retrace=None):
 
     file_number_list = create_file_number_list(file_id, n_files)
     filtered_str = ""
@@ -111,15 +186,16 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
     if type == "Aux2(V)":
 
         if plot_retrace == False:
-            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
+            if bestfit == True:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None", s=marker_size)
 
         if plot_retrace == True:
-            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['blue']}", alpha=0.1)
+            sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['purple']}", facecolor="None",
                             s=marker_size,label ="trace")
-            sns.lineplot(ax=axis, x=x_retrace, y=y_retrace, color=f"{color_map['dark_yellow']}", alpha=0.1)
-            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['orange']}", facecolor="None",label ="retrace",
+            sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1, label="best fit")
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['blue']}", facecolor="None",label ="retrace",
                             s=marker_size)
 
         title = f"dI/dV"
@@ -430,8 +506,15 @@ def import_spectra(path):
     data_file = f'{path}'
     traces, message = mtrx_data.open(data_file)
     curve_trace, message = mtrx_data.select_curve(traces[0])
-    curve_retrace, message = mtrx_data.select_curve(traces[1])
-    return Spec_curve(curve_trace), Spec_curve(curve_retrace)
+    try:
+        curve_retrace, message = mtrx_data.select_curve(traces[1])
+    except:
+        return Spec_curve(curve_trace)
+        print("Spectra imported - Only trace exists")
+    else:
+        return Spec_curve(curve_trace), Spec_curve(curve_retrace)
+        print("Spectra imported - Both trace and retrace exists")
+
     # TODO: Return this as a dictionary instead of an object {trace: curve_trace, retrace: curve_retrace, Z: }
 
 
