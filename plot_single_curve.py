@@ -34,11 +34,13 @@ x = x[:end]
 y = y[:end]
 
 
-result, background, init = quick_fit(x, y, linear = True, exponential = True, fit_type="voigt", n_curves= 1)
+result, background, components, init = quick_fit(x, y, linear = True, exponential = True, fit_type="voigt", n_curves= 1)
 y_bestfit = result.best_fit
 
-plot_single_curve(file_id, n_files, plot_retrace=plot_retrace, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end, bestfit=True, y_fit=y_bestfit)
-print(result.fit_report())
+
+plot_single_curve(file_id, n_files, plot_retrace=plot_retrace, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end, bestfit=True, y_fit=y_bestfit, results_object=result)
+
+#print(result.fit_report())
 result.params.pretty_print()
 
 
