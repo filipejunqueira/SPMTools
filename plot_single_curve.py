@@ -20,7 +20,7 @@ marker_size = 160
 
 type = "Aux2(V)"
 figsize = (20,14)
-file_id = 37
+file_id =37
 n_files = 1
 plot_retrace = False
 end = 512
@@ -34,14 +34,13 @@ x = x[:end]
 y = y[:end]
 
 
-result, background, components, init = quick_fit(x, y, linear = True, exponential = True, fit_type="voigt", n_curves= 1)
-y_bestfit = result.best_fit
+results, background, components, init = quick_fit(x, y, linear = True, exponential = True, fit_type="gaussian", n_curves= 1)
+y_bestfit = results.best_fit
 
+plot_single_curve(file_id, n_files, type=type, filter = True, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end, bestfit=True, y_fit=y_bestfit, results_object=results)
 
-plot_single_curve(file_id, n_files, plot_retrace=plot_retrace, type =type, filter = False, fontsize=fontsize,marker_size=marker_size, figsize=figsize, slice_end=end, bestfit=True, y_fit=y_bestfit, results_object=result)
-
-#print(result.fit_report())
-result.params.pretty_print()
+print(results.fit_report())
+#results.params.pretty_print()
 
 
 

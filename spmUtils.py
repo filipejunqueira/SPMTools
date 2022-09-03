@@ -5,11 +5,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.special import hyp2f1 as Fy
 from scipy.optimize import curve_fit
+from scipy.signal import savgol_filter
 import os
 import csv
 from lmfit.models import (StepModel,ExpressionModel, PolynomialModel, QuadraticModel, LorentzianModel, LinearModel, VoigtModel, ExponentialModel, GaussianModel, SkewedVoigtModel, SkewedGaussianModel, SplitLorentzianModel, PseudoVoigtModel, SkewedGaussianModel,LognormalModel,ExponentialGaussianModel)
 from lmfit import Model
 from colour import Color
+
 
 import itertools
 
@@ -20,10 +22,11 @@ import itertools
 color_map = {"green": "#90EE90", "dark_green": "#95BA61" , "orange": "#FFAB00", "dark_yellow": "#8B8000", "yellow": "#FFDB58", "red": "#B60005", "blue": "#3c59ff", "white": "#FFFFFF.",
              "purple": "#7b40c9", "pink": "#FFB490", "black": "#171717"}
 
-color_components_initial = Color("#FF5733")
-color_components = list(color_components_initial.range_to(Color('blue'),4))
-
-color_map_vivian = ["green","blue","#FFDB58","#C500B2"]
+color_components_initial = Color("red")
+color_components_final = Color('orange')
+color_map_comp = [color.hex_l for color in list(color_components_initial.range_to(color_components_final,5))]
+color_map_comp2 = ["green","blue","#FFDB58","#C500B2"]
+data_color = "#7b40c9"
 # THIS NEEDS TO BE CHANGE IF THE PROJECT FOLDER CHANGES!
 
 root_path = "/media/filipejunqueira/DATA/"
@@ -90,20 +93,21 @@ def average_curves(file_number_list,type,direction=0):
 
 def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_curves=1, algo="leastsq", initial_value=0, brute_step=0.01):
     """
-    > This function takes in a set of x and y data, and a set of booleans that determine which models to fit to the data. It
-    then returns the fit parameters and the initial guess for the fit
+    It takes in a set of x and y values, and fits them to a model that is a combination of a linear background, an
+    exponential background, and a number of curves of the type specified by the user
 
     :param x: the x-axis data
-    :param y: the data to fit
-    :param linear: True/False, defaults to False (optional)
-    :param exponential: y = a*exp(b*x), defaults to False (optional)
-    :param gaussian: Gaussian/normal distribution, defaults to False (optional)
-    :param lorentzian: , defaults to False (optional)
-    :param voigt: VoigtModel(), defaults to False (optional)
-    :return: The result of the fit and the initial guess.
+    :param y: the data to be fitted
+    :param linear: whether to fit a linear background, defaults to True (optional)
+    :param exponential: if True, adds an exponential background to the fit, defaults to True (optional)
+    :param fit_type: the type of curve you want to fit. Options are:, defaults to lorentzian (optional)
+    :param n_curves: number of curves to fit, defaults to 1 (optional)
+    :param algo: the fitting algorithm to use. Options are "leastsq", "least_squares", "brute", "differential_evolution",
+    "nelder", "lbfgsb", "powell", "cg", "newton", "cobyla", "tnc, defaults to leastsq (optional)
+    :param initial_value: the initial value of the parameter you want to fit, defaults to 0 (optional)
+    :param brute_step: the step size for the brute force algorithm
+    :return: The result of the fit, the background, the components of the fit, and the initial guess.
     """
-
-
 
     def empty(x):
         return 0
@@ -111,19 +115,14 @@ def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_
     initial_model = Model(empty)
     parameters = initial_model.make_params()
 
-    # generating every possible combination of exponential and linear string inputs
-    #exponential = list(map(''.join, itertools.product(*zip("exponential".upper(), "exponential".lower()))))
-    #exponential.append(list(map(''.join, itertools.product(*zip("exp".upper(), "exp".lower())))))
-
-
     #background
 
     if linear == True:
 
         linear_mod = LinearModel(prefix='lin_')
-        parameters.update(linear_mod.guess(y, x=x))
+        parameters.update(linear_mod.guess(y[:35], x=x[:35]))
+        parameters["lin_intercept"].set(value = 0)
         initial_model = initial_model + linear_mod
-        #np.absolute(((np.max(y) - np.min(y))/(np.max(x)-np.min(x))))
 
     if exponential == True:
 
@@ -132,48 +131,76 @@ def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_
         initial_model = initial_model + exp_mod
 
     background = initial_model
-    final_model = background
+    fit_model = initial_model
+
     curves_fitted = []
 
     for i in range(n_curves):
+        print(i)
 
         if fit_type == "lorentzian":
 
-            fit_model = LorentzianModel(prefix=f'lor_{i}')
-            parameters.update(fit_model.guess(y, x=x))
-            fit_model.set_param_hint('height', min=np.min(y))
-            fit_model.set_param_hint('height', max=np.max(y))
-            final_model = background + fit_model
+            lor_model = LorentzianModel(prefix=f'lor_{i}')
+            parameters.update(lor_model.guess(y, x=x))
+            parameters[f"lor_{i}center"].set(value=3)
+            fit_model = fit_model + lor_model
+
+        elif fit_type == "slorentzian":
+
+            slor_model = SplitLorentzianModel(prefix=f'slor_{i}')
+            parameters.update(slor_model.guess(y, x=x))
+            fit_model = fit_model + slor_model
+
+        elif fit_type == "pvoigt":
+
+            pvoi_model = PseudoVoigtModel(prefix=f'slor_{i}')
+            parameters.update(pvoi_model.guess(y, x=x))
+            fit_model = fit_model + pvoi_model
 
         elif fit_type == "voigt":
 
-            fit_model = VoigtModel(prefix=f'voi_{i}')
-            parameters.update(fit_model.guess(y, x=x))
-            fit_model.set_param_hint(f'voi_{i}height', max=np.max(y))
-            final_model = background + fit_model
+            voi_model = VoigtModel(prefix=f'voi_{i}')
+            parameters.update(voi_model.guess(y, x=x))
+            fit_model = fit_model + voi_model
 
         elif fit_type == "gaussian":
 
-            fit_model = GaussianModel(prefix=f'gauss_{i}')
-            parameters.update(fit_model.guess(y, x=x))
-            final_model = background + fit_model
+            gauss_model = GaussianModel(prefix=f'gauss_{i}')
+            parameters.update(gauss_model.guess(y, x=x))
+            fit_model = fit_model + gauss_model
 
         elif fit_type == "quadratic":
 
-            fit_model = QuadraticModel(prefix=f'quad_{i}')
-            parameters.update(fit_model.guess(y, x=x))
-            final_model = background + fit_model
+            quadratic_model = QuadraticModel(prefix=f'quad_{i}')
+            parameters.update(quadratic_model.guess(y, x=x))
+            fit_model = fit_model + quadratic_model
 
 
-    init = final_model.eval(parameters, x=x)
-    result = final_model.fit(y, x=x, params=parameters, method=algo)
+    init = fit_model.eval(parameters, x=x)
+    result = fit_model.fit(y, x=x, params=parameters, method=algo)
     components = result.eval_components()
 
     return result, background, components, init
 
+def _plot_components(results_object, axis = None, x = None, y = None):
+    if results_object is not None:
+        components = results_object.eval_components(x=x)
+        for idx, key in enumerate(components):
+            print(key)
+            if key == 'empty' or key == 'lin_':
+                pass
+            else:
+                try:
+                    fwhm = f": FWHM =  {round(results_object.params[f'{key}fwhm'].value,2)} \u00B1 {round(results_object.params[f'{key}fwhm'].stderr,2)}"
+                except:
+                    fwhm = ""
+                sns.lineplot(ax=axis, x=x, y=(components[f'{key}']+ components[f'lin_']),
+                             color=color_map_comp[(idx - 2) % len(color_map_comp)], alpha=0.3, label=f"{key}".strip("_") + f"{fwhm}",
+                             linewidth=4.5)
+    else:
+        pass
 
-
-def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100, bestfit=True, y_fit= None, y_fit_retrace=None, results_object=None):
+def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100, bestfit=True, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None):
 
     file_number_list = create_file_number_list(file_id, n_files)
     filtered_str = ""
@@ -185,42 +212,44 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
     print(f"Curves {file_number_list} of type: {type} have been averaged ")
     print(f"Attention: I'm slicing the graph from {slice_start} to {slice_end} points. Make sure this is what you want.")
 
-    if filter == True:
+    if filter is True:
         y = savgol_filter(y, filter_window, filter_order)
         filtered_str = f"filter_w{filter_window}o{filter_order}"
 
-    if plot_retrace==True:
+    if plot_retrace is True:
         x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
         x_retrace = x_retrace[slice_start:slice_end]
         y_retrace = y_retrace[slice_start:slice_end]
         print(f"Attention - Retraces are also being computed")
-        if filter == True:
-            y = savgol_filter(y, filter_window, filter_order)
+
+        if filter is True:
+            y_retrace = savgol_filter(y_retrace, filter_window, filter_order)
             filtered_str = f"filter_w{filter_window}o{filter_order}"
 
     figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 
     if type == "Aux2(V)":
 
-        if plot_retrace == False:
-            if bestfit == True:
-                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit",linewidth=6.5)
-                if results_object is not None:
-                    components = results_object.eval_components()
-                    for idx,key in enumerate(components):
-                        if key == 'empty' or key == 'lin_':
-                            pass
-                        else:
-                            sns.lineplot(ax=axis, x=x, y=components[f'{key}'] + components[f'lin_'],color=color_map_vivian[(idx-2)%len(color_map_vivian)], alpha=0.3, label=f"comp_{key}",linewidth=4.5)
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['red']}", facecolor="None", s=marker_size)
+        if plot_retrace is False:
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{data_color}", facecolor="None",
+                            s=marker_size) # No label in this case.
+            if bestfit is True:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=0.8, label="best fit",linewidth=6.5)
+                _plot_components(results_object,axis = axis , x=x,y=y) # This is just line of best fit for the trace data.
 
-        if plot_retrace == True:
-            sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['red']}", facecolor="None",
-                            s=marker_size,label ="trace")
-            sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1, label="best fit")
-            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['blue']}", facecolor="None",label ="retrace",
+        if plot_retrace is True:
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{data_color}", facecolor="None",
+                            s=marker_size, label="trace") # This is similar to the trace but it will include the label trace.
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['blue']}",
+                            facecolor="None", label="retrace", # This is the retrace.
                             s=marker_size)
+            if bestfit is True:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
+                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1,
+                             label="best fit")
+                _plot_components(results_object_retrace,axis = axis , x=x,y=y)
+
+        # Cosmetics of the graph!
 
         title = f"dI/dV"
         name_x = "Bias"
@@ -236,11 +265,11 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
 
     elif type == "Df(V)":
 
-        if plot_retrace == False:
+        if plot_retrace is False:
             sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None", s=marker_size)
 
-        if plot_retrace == True:
+        if plot_retrace is True:
             sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None",
                             s=marker_size, label ="trace")
@@ -248,6 +277,7 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
             sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['pink']}", facecolor="None",
                             s=marker_size, label ="retrace")
 
+        #Cosmetics of the graph!
         title = f"Df(V)"
         name_x = "Bias"
         name_y = "Df(V)"
@@ -277,7 +307,7 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
             sns.lineplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, color=color_map["yellow"], label="df retrace", alpha=1)
             sns.scatterplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=f"{color_map['dark_yellow']}", facecolor="None",
                             s=marker_size)
-
+        # Cosmetics of the graph!
         title = f"Df(Z)"
         name_x = "Z"
         name_y = "Df(Z)"
@@ -292,17 +322,19 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
         axis.legend(loc=0)
 
 
-
+    # Building path to save the image:
     pwd = os.getcwd()
     name = f"{type}_{project_folder_name}--{file_id}_{n_files}{filtered_str}"
     save_dir_name = "single_curve_graphs"
     save_dir= os.path.join(pwd,save_dir_name)
+    # Checks if the folder exists
     if os.path.isdir(save_dir) == False:
         os.mkdir(save_dir)
     else:
         pass
 
     image_name = os.path.join(pwd,save_dir_name,name)
+    # Finally saves the image
     plt.savefig(fname=f"{image_name}.svg", facecolor='auto', edgecolor='auto', transparent=True)
     plt.show()
 

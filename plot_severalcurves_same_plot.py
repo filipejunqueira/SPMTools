@@ -11,7 +11,7 @@ sns.set(style="ticks", context="talk")
 sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
 
 #folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
-folder_path = "/media/captainbroccoli/DATA/2022-08-07/"
+folder_path = "/media/filipejunqueira/DATA/2022-08-07/"
 
 #prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
@@ -82,6 +82,6 @@ if os. path.isdir(f"{pwd}/{dir}") == False:
 else:
     pass
 plt.savefig(fname=f"{pwd}/{dir}/{name}",formatstr='.eps',facecolor='auto', edgecolor='auto')
-
+plt.show()
 print("I owe you nothing")
 
