@@ -11,6 +11,8 @@ import csv
 from lmfit.models import (StepModel,ExpressionModel, PolynomialModel, QuadraticModel, LorentzianModel, LinearModel, VoigtModel, ExponentialModel, GaussianModel, SkewedVoigtModel, SkewedGaussianModel, SplitLorentzianModel, PseudoVoigtModel, SkewedGaussianModel,LognormalModel,ExponentialGaussianModel)
 from lmfit import Model
 from colour import Color
+from functools import cache
+from numba import njit
 
 
 import itertools
@@ -18,24 +20,12 @@ import itertools
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
 
 
-# Hex color for graphs
-color_map = {"green": "#90EE90", "dark_green": "#95BA61" , "orange": "#FFAB00", "dark_yellow": "#8B8000", "yellow": "#FFDB58", "red": "#B60005", "blue": "#3c59ff", "white": "#FFFFFF.",
-             "purple": "#7b40c9", "pink": "#FFB490", "black": "#171717"}
-
-color_components_initial = Color("red")
-color_components_final = Color('orange')
-color_map_comp = [color.hex_l for color in list(color_components_initial.range_to(color_components_final,5))]
-color_map_comp2 = ["green","blue","#FFDB58","#C500B2"]
-data_color = "#7b40c9"
 # THIS NEEDS TO BE CHANGE IF THE PROJECT FOLDER CHANGES!
-
 root_path = "/media/filipejunqueira/DATA/"
-project_folder_name = "2022-08-12"
-prefix = "20220812-124820_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+project_folder_name = "2022-08-07"
+prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_mtrx"
-
 project_folder_path = os.path.join(root_path,project_folder_name)
-
 # USEFUL FOR SINGLE PLOT   ############################################################################################
 
 def create_file_number_list(file_id,n_files):
@@ -91,7 +81,16 @@ def average_curves(file_number_list,type,direction=0):
 
     return x, y
 
-def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_curves=1, algo="leastsq", initial_value=0, brute_step=0.01):
+def _empty(x):
+    """
+    It returns 0. It is just a place holder to create the first model on quick_fit().
+    """
+    return 0
+
+
+def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_curves=1, algo="leastsq", initial_value=0, brute_step=0.01, lin_cutoff=1):
+
+
     """
     It takes in a set of x and y values, and fits them to a model that is a combination of a linear background, an
     exponential background, and a number of curves of the type specified by the user
@@ -109,22 +108,25 @@ def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_
     :return: The result of the fit, the background, the components of the fit, and the initial guess.
     """
 
-    def empty(x):
-        return 0
 
-    initial_model = Model(empty)
+    initial_model = Model(_empty)
     parameters = initial_model.make_params()
 
     #background
 
-    if linear == True:
+    if linear is True:
 
         linear_mod = LinearModel(prefix='lin_')
-        parameters.update(linear_mod.guess(y[:35], x=x[:35]))
-        parameters["lin_intercept"].set(value = 0)
+        ylin_cutoff = int(np.round(len(y)*lin_cutoff,0))
+        xlin_cutoff = int(np.round(len(x)*lin_cutoff,0))
+        #parameters.update(linear_mod.guess(y,x=x))
+        parameters.update(linear_mod.guess(y[:ylin_cutoff], x=x[:xlin_cutoff]))
+        parameters["lin_slope"].set(vary = True)
+        parameters["lin_intercept"].set(value = 0, vary = True)
+
         initial_model = initial_model + linear_mod
 
-    if exponential == True:
+    if exponential is True:
 
         exp_mod = ExponentialModel(prefix='exp_')
         parameters.update(exp_mod.guess(y, x=x))
@@ -133,11 +135,8 @@ def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_
     background = initial_model
     fit_model = initial_model
 
-    curves_fitted = []
-
     for i in range(n_curves):
-        print(i)
-
+        print(f"fitting curve i =  {i}")
         if fit_type == "lorentzian":
 
             lor_model = LorentzianModel(prefix=f'lor_{i}')
@@ -182,44 +181,35 @@ def quick_fit(x, y, linear = True, exponential = True, fit_type="lorentzian", n_
 
     return result, background, components, init
 
-def _plot_components(results_object, axis = None, x = None, y = None):
-    if results_object is not None:
-        components = results_object.eval_components(x=x)
-        for idx, key in enumerate(components):
-            print(key)
-            if key == 'empty' or key == 'lin_':
-                pass
-            else:
-                try:
-                    fwhm = f": FWHM =  {round(results_object.params[f'{key}fwhm'].value,2)} \u00B1 {round(results_object.params[f'{key}fwhm'].stderr,2)}"
-                except:
-                    fwhm = ""
-                sns.lineplot(ax=axis, x=x, y=(components[f'{key}']+ components[f'lin_']),
-                             color=color_map_comp[(idx - 2) % len(color_map_comp)], alpha=0.3, label=f"{key}".strip("_") + f"{fwhm}",
-                             linewidth=4.5)
-    else:
-        pass
 
-def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, slice_start= 0, slice_end=512, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14),marker_size=100, bestfit=True, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None):
 
-    file_number_list = create_file_number_list(file_id, n_files)
-    filtered_str = ""
+def plot_single_curve(x, y, curve_type ="Aux2(V)", plot_retrace=False, fontsize=36, filter = False, filter_order = 3, filter_window = 5, root_path="", figsize=(14, 14), marker_size=100, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None, color_map=None):
 
-    x, y = average_curves(file_number_list, type, direction=0)
-    x = x[slice_start:slice_end]
-    y = y[slice_start:slice_end]
+    def _plot_components(results_object, axis=None, x=None):
+        sns.set(font_scale=1.5, style="ticks", context="talk")
 
-    print(f"Curves {file_number_list} of type: {type} have been averaged ")
-    print(f"Attention: I'm slicing the graph from {slice_start} to {slice_end} points. Make sure this is what you want.")
+        if results_object is not None:
+            components = results_object.eval_components(x=x)
+            for idx, key in enumerate(components):
+                print(key)
+                if key == '_empty' or key == 'lin_':
+                    pass
+                else:
+                    try:
+                        fwhm = f": FWHM =  {round(results_object.params[f'{key}fwhm'].value, 2)} \u00B1 {round(results_object.params[f'{key}fwhm'].stderr, 2)}"
+                    except:
+                        fwhm = ""
 
-    if filter is True:
-        y = savgol_filter(y, filter_window, filter_order)
-        filtered_str = f"filter_w{filter_window}o{filter_order}"
+                    color_comp_dic = color_map['color_map_comp']
+                    sns.lineplot(ax=axis, x=x, y=(components[f'{key}'] + components[f'lin_']),
+                                 color=color_comp_dic[(idx - 2) % len(color_comp_dic)], alpha=0.3,
+                                 label=f"{key}".strip(f"_") + f"{fwhm}",
+                                 linewidth=4.5)
+        else:
+            pass
 
     if plot_retrace is True:
-        x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
-        x_retrace = x_retrace[slice_start:slice_end]
-        y_retrace = y_retrace[slice_start:slice_end]
+        x_retrace, y_retrace = average_curves(file_number_list, curve_type, direction=1)
         print(f"Attention - Retraces are also being computed")
 
         if filter is True:
@@ -228,24 +218,24 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
 
     figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 
-    if type == "Aux2(V)":
+    if curve_type == "Aux2(V)":
 
         if plot_retrace is False:
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{data_color}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor = color_map["data"], facecolor="None",
                             s=marker_size) # No label in this case.
-            if bestfit is True:
-                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=0.8, label="best fit",linewidth=6.5)
-                _plot_components(results_object,axis = axis , x=x,y=y) # This is just line of best fit for the trace data.
+            if y_fit is not None:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color= color_map["best_fit"], alpha=0.8, label="best fit",linewidth=6.5)
+                _plot_components(results_object,axis = axis , x=x) # This is just line of best fit for the trace data.
 
         if plot_retrace is True:
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{data_color}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=color_map["data"], facecolor="None",
                             s=marker_size, label="trace") # This is similar to the trace but it will include the label trace.
-            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['blue']}",
+            sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=color_map["data_retrace"],
                             facecolor="None", label="retrace", # This is the retrace.
                             s=marker_size)
-            if bestfit is True:
-                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
-                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1,
+            if y_fit is not None:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=color_map["best_fit"], alpha=1, label="best fit")
+                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=color_map["best_fit_retrace"], alpha=1,
                              label="best fit")
                 _plot_components(results_object_retrace,axis = axis , x=x,y=y)
 
@@ -263,19 +253,24 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
         plt.xticks(fontsize=(fontsize - 2))
         plt.yticks([])
 
-    elif type == "Df(V)":
+    elif curve_type == "Df(V)":
 
         if plot_retrace is False:
-            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None", s=marker_size)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['green']}", facecolor="None", s=marker_size)
+
+            if y_fit is not None:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
 
         if plot_retrace is True:
-            sns.lineplot(ax=axis, x=x, y=y, color=f"{color_map['black']}", alpha=0.1)
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['black']}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['green']}", facecolor="None",
                             s=marker_size, label ="trace")
-            sns.lineplot(ax=axis, x=x_retrace, y=y_retrace, color=f"{color_map['black']}", alpha=0.1)
             sns.scatterplot(ax=axis, x=x_retrace, y=y_retrace, alpha=1, edgecolor=f"{color_map['pink']}", facecolor="None",
                             s=marker_size, label ="retrace")
+            if y_fit is not None:
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
+                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1,
+                             label="best fit")
+
 
         #Cosmetics of the graph!
         title = f"Df(V)"
@@ -290,20 +285,19 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
         plt.xticks(fontsize=(fontsize - 2))
         plt.yticks(fontsize=(fontsize - 2))
 
-    elif type == "Df(Z)":
+    elif curve_type == "Df(Z)":
 
-        x, y = average_curves(file_number_list, type, direction=0)
+        x, y = average_curves(file_number_list, curve_type, direction=0)
 
         if plot_retrace == False:
             sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace",alpha=1)
             sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}", facecolor="None", s=marker_size)
 
-
         if plot_retrace == True:
             sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["green"], label="df trace", alpha=1)
             sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y, alpha=0.1, edgecolor=f"{color_map['dark_green']}",
                             facecolor="None", s=marker_size)
-            x_retrace, y_retrace = average_curves(file_number_list, type, direction=1)
+            x_retrace, y_retrace = average_curves(file_number_list, curve_type, direction=1)
             sns.lineplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, color=color_map["yellow"], label="df retrace", alpha=1)
             sns.scatterplot(ax=axis, x=x_retrace * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=f"{color_map['dark_yellow']}", facecolor="None",
                             s=marker_size)
@@ -322,28 +316,9 @@ def plot_single_curve(file_id, n_files=1, type ="Aux2(V)", plot_retrace=False, s
         axis.legend(loc=0)
 
 
-    # Building path to save the image:
-    pwd = os.getcwd()
-    name = f"{type}_{project_folder_name}--{file_id}_{n_files}{filtered_str}"
-    save_dir_name = "single_curve_graphs"
-    save_dir= os.path.join(pwd,save_dir_name)
-    # Checks if the folder exists
-    if os.path.isdir(save_dir) == False:
-        os.mkdir(save_dir)
-    else:
-        pass
-
-    image_name = os.path.join(pwd,save_dir_name,name)
-    # Finally saves the image
-    plt.savefig(fname=f"{image_name}.svg", facecolor='auto', edgecolor='auto', transparent=True)
-    plt.show()
-
         # axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
     return True
-
-
-
-# Object spec curve   ############################################################################################
+# Other Functions  ############################################################################################
 
 
 # The class Spec_curve takes a curve object from the AFM_data class and creates a dataframe with the Z and deltaF values
@@ -392,6 +367,7 @@ def plot_curve_list(curve_list, X, save=True, title="Title", name_x="X", name_y=
     plt.show()
 
 
+# Get's matrix image
 def get_matrix_image(image_path):
     mtrx_data = access2thematrix.MtrxData()
     traces, message = mtrx_data.open(image_path)
@@ -401,7 +377,7 @@ def get_matrix_image(image_path):
 
     return im, message, message_im
 
-
+# Simple df (ON and OFF) plot.
 def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", retrace=False, off=True):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
@@ -433,7 +409,7 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
 
     plt.show()
 
-
+#Plot the direct forces (without subtracting).
 def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
@@ -463,13 +439,13 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
             os.mkdir(f"{pwd}/{directory_path}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.svg', facecolor='auto', edgecolor='auto')
     else:
         pass
 
     plt.show()
 
-
+# Plots the short range forces
 def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
@@ -507,6 +483,7 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
     plt.show()
 
 
+# Plot both things at the same time. Probably should be deprecated
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off, z_force, z_df, save=False,
                        name="ForceVsZ", retrace=False):
     figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
@@ -551,6 +528,7 @@ def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off,
     plt.show()
 
 
+# Super important, this imports the spectra.
 def import_spectra(path):
     """
     > The function `import_spectra` takes a path to a .mtrx file and returns a `Spec_curve` object for the trace and retrace
@@ -605,7 +583,7 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
             data_list.append((item1, item2))
     return data_list
 
-
+# Fit lennard Jones. Does not work yet.
 def fit_lennard_jones(z_on, z_off, df_off, A=0.2E-9, k=1800, f0=25000, simple=False):
     """
 
@@ -667,7 +645,7 @@ def fit_lennard_jones(z_on, z_off, df_off, A=0.2E-9, k=1800, f0=25000, simple=Fa
     elif simple == True:
         pass
 
-
+# Create df Lennard Jones curve
 def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,
                       A=11.8E-12, simple=False, plot=False):
     """
@@ -736,7 +714,7 @@ def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, 
     return min_force
 
 
-# Deconvoluting the data.
+# Deconvoluting the data and outputs the force
 def sjarvis_deconvolution(df_Z, A=0.01E-9, f0=-25000, k=1800):
     ############### specification: ##################
     '''

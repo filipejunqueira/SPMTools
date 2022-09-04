@@ -27,7 +27,6 @@ for file,parameter in csv_list:
 
 sorted_list = sorted(csv_list_temp, key=lambda t: t[1])
 palette = sns.color_palette(['blue'], len(np.unique(np.asarray(sorted_list))))
-
 figure, axis = plt.subplots(1,1,figsize=(14, 7), sharex=True)
 
 #color_trace = 3554368 # black/grey to blue
