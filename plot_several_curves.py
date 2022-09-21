@@ -9,18 +9,18 @@ sns.set(style="ticks", context="talk")
 #color_map_comp2 = ["green","blue","#FFDB58","#C500B2"]
 
 
-n_component_colors = 3
+n_component_colors = 10
 color_components_initial = Color("red")
-color_components_final = Color('green')
+color_components_final = Color('yellow')
+
 color_map_comp = [color.hex_l for color in list(color_components_initial.range_to(color_components_final,n_component_colors))]
 
-
-color_map = {"data": "#7b40c9","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
+color_map = {"data": "#90EE90","data_retrace": "#FFFF00", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
 color_map2 = {"data": "#90EE90","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
 
 
 #Folder Structure#######################################################################################################
-root_path = "/media/filipejunqueira/DATA/"
+root_path = "/media/captainbroccoli/DATA/"
 project_folder_name = "2022-07-17"
 prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_mtrx"
@@ -70,18 +70,39 @@ print(sorted_list)
 
 figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 
-for file_id, n_files, parameter in sorted_list:
+#COLOR SCHEME for all the curves in the same graph::
+
+
+color_trace_initial= Color("yellow")
+color_trace_final= Color('orange')
+
+color_retrace_initial= Color("blue")
+color_retrace_final= Color("purple")
+
+color_map_trace = [color.hex_l for color in list(color_trace_initial.range_to(color_trace_final,len(sorted_list)))]
+color_map_retrace = [color.hex_l for color in list(color_retrace_initial.range_to(color_retrace_final,len(sorted_list)))]
+
+for i, item in enumerate(sorted_list):
+
+    file_id, n_files, parameter = item
+
+    # this modifies the color_map dictionary such that the colors of each curve are different. The gradient is automatic and determined by the size of the list.
+    #only availble
+    color_map = {"data": color_map_trace[i], "data_retrace": color_map_retrace[i], "best_fit": "#171717", "best_fit_retrace": "#B60005",
+                 "color_map_comp": color_map_comp}
 
     file_number_list = create_file_number_list(file_id, n_files)
     x, y = average_curves(prefix_full_path, file_number_list, curve_type, direction=0)
     print(f"Curves {file_id} of type: {curve_type} have been averaged ")
 
     if plot_retrace_flag is False:
-        plot_single_curve(x, y, axis=axis, curve_type=curve_type, fontsize=fontsize, marker_size=marker_size,color_map=color_map)
+        plot_single_curve(x, y, axis=axis, curve_type=curve_type, fontsize=fontsize, marker_size=marker_size, color_map=color_map,
+                          label_flag=False)
     else:
         _, y_retrace = average_curves(prefix_full_path,file_number_list, curve_type, direction=1)
         plot_single_curve(x, y, axis=axis, curve_type=curve_type, fontsize=fontsize, marker_size=marker_size,
-                          y_retrace=y_retrace, color_map=color_map)
+                          y_retrace=y_retrace, color_map=color_map,label_flag=False)
+
 
 filtered_str =""
 # Building path to save the image:

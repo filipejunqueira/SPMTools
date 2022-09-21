@@ -13,7 +13,7 @@ color_map = {"data": "#7b40c9","data_retrace": "#90EE90", "best_fit": "#171717",
 color_map2 = {"data": "#90EE90","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
 
 #Folder Structure#######################################################################################################
-root_path = "/media/filipejunqueira/DATA/"
+root_path = "/media/captainbroccoli/DATA/"
 project_folder_name = "2022-08-07"
 prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_mtrx"

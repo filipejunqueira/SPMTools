@@ -192,7 +192,7 @@ def save_plot(path_dic,save_dir_name):
     # Finally saves the image
     plt.savefig(fname=f"{image_name}.svg", facecolor='auto', edgecolor='auto', transparent=True)
 
-def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fontsize=36, marker_size=100, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None, color_map=None):
+def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fontsize=36, marker_size=100, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None, color_map=None, label_flag=True):
 
     def _plot_components(results_object, axis=None, x=None):
         sns.set(font_scale=1.5, style="ticks", context="talk")
@@ -261,19 +261,19 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
     elif curve_type == "Df(V)":
 
         if y_retrace is None:
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['green']}", facecolor="None", s=marker_size)
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=color_map["data"], facecolor="None", s=marker_size)
 
             if y_fit is not None:
-                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=color_map["best_fit"], alpha=1, label="best fit")
 
         if y_retrace is not None:
-            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=f"{color_map['green']}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=color_map["data"], facecolor="None",
                             s=marker_size, label ="trace")
-            sns.scatterplot(ax=axis, x=x, y=y_retrace, alpha=1, edgecolor=f"{color_map['pink']}", facecolor="None",
+            sns.scatterplot(ax=axis, x=x, y=y_retrace, alpha=1, edgecolor=color_map["data_retrace"], facecolor="None",
                             s=marker_size, label ="retrace")
             if y_fit is not None:
-                sns.lineplot(ax=axis, x=x, y=y_fit, color=f"{color_map['black']}", alpha=1, label="best fit")
-                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=f"{color_map['black']}", alpha=1,
+                sns.lineplot(ax=axis, x=x, y=y_fit, color=color_map["best_fit"], alpha=1, label="best fit")
+                sns.lineplot(ax=axis, x=x_retrace, y=y_fit_retrace, color=color_map["best_fit_retrace"], alpha=1,
                              label="best fit")
 
 
@@ -293,16 +293,33 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
     elif curve_type == "Df(Z)":
 
         if y_retrace is None:
-            sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"], label="df trace",alpha=1)
-            sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=color_map["data"], facecolor="None", s=marker_size)
+
+            #TRACE BLOCK####################################################################################
+            if label_flag is True:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"], label="df trace",alpha=1)
+            else:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"],alpha=1)
+
+            #sns.scatterplot(ax=axis, x=x* 10 ** 9, y=y, alpha=0.1, edgecolor=color_map["data"], facecolor="None", s=marker_size)
 
         if y_retrace is not None:
-            sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"], label="df trace", alpha=1)
-            sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y, alpha=0.1, edgecolor=color_map["data"],
-                            facecolor="None", s=marker_size)
-            sns.lineplot(ax=axis, x=x * 10 ** 9, y=y_retrace, color=color_map["data_retrace"], label="df retrace", alpha=1)
-            sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=color_map["data_retrace"], facecolor="None",
-                            s=marker_size)
+
+            #TRACE BLOCK####################################################################################
+            if label_flag is True:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"], label="df trace", alpha=1)
+            else:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y, color=color_map["data"], alpha=1)
+
+            #sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y, alpha=0.1, edgecolor=color_map["data"],facecolor="None", s=marker_size)
+
+            #RETRACE BLOCK####################################################################################
+            if label_flag is True:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y_retrace, color=color_map["data_retrace"], label="df retrace", alpha=1)
+            else:
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y_retrace, color=color_map["data_retrace"], alpha=1)
+
+            #sns.scatterplot(ax=axis, x=x * 10 ** 9, y=y_retrace, alpha=0.1, edgecolor=color_map["data_retrace"], facecolor="None",                            s=marker_size)
+
         # Cosmetics of the graph!
         title = f"Df(Z)"
         name_x = "Z"
@@ -315,7 +332,10 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
         axis.set_ylabel(f"{name_y} {unit_y}", fontsize=(fontsize - 2))
         plt.xticks(fontsize=(fontsize - 2))
         plt.yticks(fontsize=(fontsize - 2))
-        axis.legend(loc=0)
+        if label_flag is True:
+            axis.legend(loc=0)
+        else:
+            pass
 
         # axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
     return True
