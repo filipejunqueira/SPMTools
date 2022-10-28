@@ -9,70 +9,107 @@ n_component_colors = 3
 color_components_initial = Color("red")
 color_components_final = Color('green')
 color_map_comp = [color.hex_l for color in list(color_components_initial.range_to(color_components_final,n_component_colors))]
-color_map = {"data": "#7b40c9","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
-color_map2 = {"data": "#90EE90","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
+color_map_type1 = {"data": "#00C9A7","data_retrace": "#FFC75F", "best_fit": "#171717", "best_fit_retrace": "#D65DB1", "color_map_comp": color_map_comp}
+color_map_type2 = {"data": "#D13A28","data_retrace": "#F9F871", "best_fit": "#171717", "best_fit_retrace": "#FF6F91", "color_map_comp": color_map_comp}
+
+
+generic_gradient = ["#845EC2","#D65DB1","#FF6F91","#FF9671","#FFC75F","#F9F871" ]
+matching_gradient = ["#845EC2", "#2C73D2", "#0081CF","#0089BA", "#008E9B", "#008F7A"]
+spot_pallet = ["#845EC2","#B39CD0","#FBEAFF","#00C9A7"]
+twisted_spot_pallet = ["#845EC2","#00C9A7", "#C4FCEF", "#4D8076"]
+collective_pallet = ["#845EC2","#BD38B2","#D13A28"]
+
 
 #Folder Structure#######################################################################################################
 root_path = "/media/captainbroccoli/DATA/"
-project_folder_name = "2022-08-07"
-prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+project_folder_name = "2022-07-17"
+prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_mtrx"
 project_folder_path = os.path.join(root_path,project_folder_name)
 prefix_full_path = os.path.join(project_folder_path,prefix)
-
 #INPUT##################################################################################################################
 #Graph
-fontsize = 36
+fontsize = 40
 marker_size = 260
-curve_type = "Aux2(V)"
-figsize = (20,14)
+figsize = (24,14)
 
 # File
-file_id =27
-n_files = 4
-plot_retrace_flag = False
+curve_type = "Df(Z)"
+file_id =432
+n_files = 1
+plot_retrace_flag = True
 slice_start = 0
-slice_end = 500
+slice_end = 512
 
 # Filtering
 filter_flag = False
 filter_order = 3
-filter_window = 3  # This needs to be an odd number
+filter_window = 7  # This needs to be an odd number
 
 
 # Fitting
 n_curves= 1
 fit_type = "lorentzian"
 algo = "leastsq"
-
+intial_guess = 2.4
 
 #fitting background
-fit_linear = True
-fit_exponential = True
-linear_background_fit_cutoff = 1/3
-plot_bestfit = True
+fix_background_linear = False
+fit_exponential = False
+fit_quadratic = False
+plot_background = False
+linear_background_fit_cutoff = 1
+plot_bestfit = False
 plot_components = False
+
 
 # Saving
 save_dir_name = "single_curve_graphs"
 
 
 #####################################################################
-
-
 ###### Script starts here ############################################
+
+#Color map to use:
+
+match curve_type:
+    case "Df(Z)":
+        color_map = color_map_type1
+        fontsize = 50
+
+    case "Aux2(V)":
+        color_map = color_map_type2
+        fontsize = 40
+
+    case "Df(V)":
+        color_map = color_map_type2
+        fontsize = 40
+
+    case "I(Z)":
+        color_map = color_map_type1
+
+##########################################################################
 
 file_number_list = create_file_number_list(file_id, n_files)
 print(f"Curves {file_number_list} of type: {curve_type} have been averaged ")
 
 if plot_retrace_flag is False:
     x, y = average_curves(prefix_full_path,file_number_list, curve_type, direction=0)
+    if curve_type == "Aux2(V)":
+        y =  y - np.nanmin(y) # re-scale to 0
+
     print(f"Attention: I'm slicing the graph from {slice_start} to {slice_end} points. Make sure this is what you want.")
     x = x[slice_start:slice_end]
     y = y[slice_start:slice_end]
     y_retrace = None
+
 else:
-    pass #THIS NEEDS TO BE CHANGED> RIGHT NOW THE AVERAGING IS INSIDE THE PLOT THIS IS BADDLY WRITTEN.
+    x, y = average_curves(prefix_full_path, file_number_list, curve_type, direction=0)
+    print(
+        f"Attention: I'm slicing the graph from {slice_start} to {slice_end} points. Make sure this is what you want.")
+    x = x[slice_start:slice_end]
+    y = y[slice_start:slice_end]
+    _, y_retrace = average_curves(prefix_full_path, file_number_list, curve_type, direction=1)
 
 # Slicing the data to be plotted/filtered/fitted.
 
@@ -88,9 +125,9 @@ else:
 # Fitting the data to a specified curve.
 
 if plot_bestfit is True:
-    results, background, components, init = quick_fit(x, y, linear = fit_linear, exponential = fit_exponential, fit_type=fit_type, lin_cutoff=linear_background_fit_cutoff, n_curves=n_curves, algo=algo)
+    results, background, components, init = quick_fit(x, y, linear = fix_background_linear, exponential = fit_exponential, quadratic=fit_quadratic, fit_type=fit_type, lin_cutoff=linear_background_fit_cutoff, n_curves=n_curves, algo=algo, guess= intial_guess)
     y_bestfit = results.best_fit
-    #print(results.fit_report())
+    print(results.fit_report())
 
 else:
     y_bestfit = None
@@ -102,7 +139,7 @@ figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 if plot_components is True:
     plot_single_curve(x, y, axis=axis, y_retrace=y_retrace, curve_type=curve_type,
                       fontsize=fontsize, marker_size=marker_size, y_fit=y_bestfit, results_object=results,
-                      color_map=color_map)
+                      color_map=color_map, plot_background=plot_background)
 
 else:
     plot_single_curve(x, y, axis=axis, y_retrace=y_retrace, curve_type=curve_type,

@@ -8,7 +8,6 @@ sns.set(style="ticks", context="talk")
 #color_map_filipe = {"green": "#90EE90", "dark_green": "#95BA61" , "orange": "#FFAB00", "dark_yellow": "#8B8000", "yellow": "#FFDB58", "red": "#B60005", "blue": "#3c59ff", "white": "#FFFFFF.","purple": "#7b40c9", "pink": "#FFB490", "black": "#171717"}
 #color_map_comp2 = ["green","blue","#FFDB58","#C500B2"]
 
-
 n_component_colors = 10
 color_components_initial = Color("red")
 color_components_final = Color('yellow')
@@ -17,6 +16,7 @@ color_map_comp = [color.hex_l for color in list(color_components_initial.range_t
 
 color_map = {"data": "#90EE90","data_retrace": "#FFFF00", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
 color_map2 = {"data": "#90EE90","data_retrace": "#90EE90", "best_fit": "#171717", "best_fit_retrace": "#B60005", "color_map_comp": color_map_comp}
+
 
 
 #Folder Structure#######################################################################################################
@@ -73,11 +73,11 @@ figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 #COLOR SCHEME for all the curves in the same graph::
 
 
-color_trace_initial= Color("yellow")
-color_trace_final= Color('orange')
+color_trace_initial= Color("#013220")
+color_trace_final= Color('#008080')
 
-color_retrace_initial= Color("blue")
-color_retrace_final= Color("purple")
+color_retrace_initial= Color("#ff7600")
+color_retrace_final= Color("#eeff00")
 
 color_map_trace = [color.hex_l for color in list(color_trace_initial.range_to(color_trace_final,len(sorted_list)))]
 color_map_retrace = [color.hex_l for color in list(color_retrace_initial.range_to(color_retrace_final,len(sorted_list)))]
