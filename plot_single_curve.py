@@ -6,11 +6,14 @@ sns.set(style="ticks", context="talk")
 
 # Hex color for graphs
 n_component_colors = 3
-color_components_initial = Color("red")
-color_components_final = Color('green')
+color_components_initial = Color("#FF9671")
+color_components_final = Color('#2C73D2')
 color_map_comp = [color.hex_l for color in list(color_components_initial.range_to(color_components_final,n_component_colors))]
+
 color_map_type1 = {"data": "#00C9A7","data_retrace": "#FFC75F", "best_fit": "#171717", "best_fit_retrace": "#D65DB1", "color_map_comp": color_map_comp}
 color_map_type2 = {"data": "#D13A28","data_retrace": "#F9F871", "best_fit": "#171717", "best_fit_retrace": "#FF6F91", "color_map_comp": color_map_comp}
+color_map_type3 = {"data": "#00C9A7","data_retrace": "#F9F871", "best_fit": "#171717", "best_fit_retrace": "#FF6F91", "color_map_comp": color_map_comp}
+color_map_type4 = {"data": "#845EC2","data_retrace": "#FFC75F", "best_fit": "#171717", "best_fit_retrace": "#D65DB1", "color_map_comp": color_map_comp}
 
 
 generic_gradient = ["#845EC2","#D65DB1","#FF6F91","#FF9671","#FFC75F","#F9F871" ]
@@ -35,7 +38,7 @@ figsize = (24,14)
 
 # File
 curve_type = "Df(Z)"
-file_id =432
+file_id =470
 n_files = 1
 plot_retrace_flag = True
 slice_start = 0
@@ -49,12 +52,11 @@ filter_window = 7  # This needs to be an odd number
 
 # Fitting
 n_curves= 1
-fit_type = "lorentzian"
+fit_type = "voigt"
 algo = "leastsq"
-intial_guess = 2.4
+intial_guess = 3.2
 
-#fitting background
-fix_background_linear = False
+#Fitting background
 fit_exponential = False
 fit_quadratic = False
 plot_background = False
@@ -62,6 +64,8 @@ linear_background_fit_cutoff = 1
 plot_bestfit = False
 plot_components = False
 
+#Fix Linear background fitting
+fix_background_linear = False
 
 # Saving
 save_dir_name = "single_curve_graphs"
@@ -78,7 +82,7 @@ match curve_type:
         fontsize = 50
 
     case "Aux2(V)":
-        color_map = color_map_type2
+        color_map = color_map_type1
         fontsize = 40
 
     case "Df(V)":

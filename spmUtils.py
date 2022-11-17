@@ -190,6 +190,8 @@ def quick_fit(x, y, linear = True, exponential = True, quadratic = False, fit_ty
 
             voi_model = VoigtModel(prefix=f'voi_{i}')
             parameters.update(voi_model.guess(y, x=x))
+            parameters[f"voi_{i}center"].set(value=guess, vary = True)
+
             fit_model = fit_model + voi_model
 
         elif fit_type == "gaussian":
