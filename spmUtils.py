@@ -258,7 +258,7 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
             pass
 
 #Check for types of curves##############################################################################################
-    if curve_type == "Aux2(V)":
+    if curve_type == "Aux2(V)" or curve_type == "didv":
 
         if y_retrace is None:
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor = color_map["data"], facecolor="None",
@@ -301,6 +301,8 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
 
         if y_retrace is None:
             sns.scatterplot(ax=axis, x=x, y=y, alpha=1, edgecolor=color_map["data"], facecolor="None", s=marker_size)
+            #sns.lineplot(ax=axis, x=x, y=y, alpha=0.5, color=color_map["data"], linewidth=2.5)
+
 
             if y_fit is not None:
                 sns.lineplot(ax=axis, x=x, y=y_fit, color=color_map["best_fit"], alpha=1, label="best fit")
@@ -382,7 +384,7 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
 
             # TRACE BLOCK####################################################################################
             if label_flag is True:
-                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y*10 ** 9, color=color_map["data"], label="df trace", alpha=1)
+                sns.lineplot(ax=axis, x=x * 10 ** 9, y=y*10 ** 9, color=color_map["data"], label="I trace", alpha=1)
             else:
                 sns.lineplot(ax=axis, x=x * 10 ** 9, y=y*10 ** 9, color=color_map["data"], alpha=1)
 
@@ -427,7 +429,6 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
         # axis.legend(bbox_to_anchor = (1.01, 1), loc = 'upper left')
     return True
 # Other Functions  ############################################################################################
-
 
 # The class Spec_curve takes a curve object from the AFM_data class and creates a dataframe with the Z and deltaF values
 class Spec_curve:
@@ -697,7 +698,6 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
 # Fit lennard Jones. Does not work yet.
 def fit_lennard_jones(z_on, z_off, df_off, A=0.2E-9, k=1800, f0=25000, simple=False):
     """
-
     # NOT WORKING AT THE MOMENT!!!
     It fits the Lennard-Jones potential to the OFF trace and returns the fitted OFF trace
 

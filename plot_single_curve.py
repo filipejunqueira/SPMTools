@@ -32,15 +32,15 @@ project_folder_path = os.path.join(root_path,project_folder_name)
 prefix_full_path = os.path.join(project_folder_path,prefix)
 #INPUT##################################################################################################################
 #Graph
-fontsize = 40
+
 marker_size = 260
-figsize = (24,14)
+figsize = (30,16)
 
 # File
-curve_type = "Df(Z)"
-file_id =470
+curve_type = "Df(V)"
+file_id =5
 n_files = 1
-plot_retrace_flag = True
+plot_retrace_flag = False
 slice_start = 0
 slice_end = 512
 
@@ -79,18 +79,27 @@ save_dir_name = "single_curve_graphs"
 match curve_type:
     case "Df(Z)":
         color_map = color_map_type1
-        fontsize = 50
+        fontsize = 60
 
     case "Aux2(V)":
         color_map = color_map_type1
-        fontsize = 40
+        fontsize = 60
 
     case "Df(V)":
         color_map = color_map_type2
-        fontsize = 40
+        fontsize = 60
 
     case "I(Z)":
         color_map = color_map_type1
+        fontsize = 60
+
+    case "A(f)":
+        color_map = color_map_type1
+        fontsize = 60
+
+    case "Phase(f)":
+        color_map = color_map_type1
+        fontsize = 60
 
 ##########################################################################
 

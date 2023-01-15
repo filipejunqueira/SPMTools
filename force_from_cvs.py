@@ -64,7 +64,6 @@ for idx,item in enumerate(csv_list):
 
 
     # Data frames of the difference of frequency shifts
-
     df_diff_trace_temp = dfON_trace["deltaF"].subtract(dfOFF["deltaF"])
     df_diff_retrace_temp = dfON_retrace["deltaF"].subtract(dfOFF["deltaF"])
 

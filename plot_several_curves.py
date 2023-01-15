@@ -29,15 +29,15 @@ prefix_full_path = os.path.join(project_folder_path,prefix)
 
 #INPUT##################################################################################################################
 #Graph
-fontsize = 36
+fontsize = 60
 marker_size = 260
-curve_type = "Df(Z)"
-figsize = (20,14)
+curve_type = "I(Z)"
+figsize = (30,16)
 
 # File
 plot_retrace_flag = True
 slice_start = 0
-slice_end = 500
+slice_end = 180
 
 # Filtering
 filter_flag = False
@@ -77,7 +77,7 @@ color_trace_initial= Color("#013220")
 color_trace_final= Color('#008080')
 
 color_retrace_initial= Color("#ff7600")
-color_retrace_final= Color("#eeff00")
+color_retrace_final= Color("#e1ad01")
 
 color_map_trace = [color.hex_l for color in list(color_trace_initial.range_to(color_trace_final,len(sorted_list)))]
 color_map_retrace = [color.hex_l for color in list(color_retrace_initial.range_to(color_retrace_final,len(sorted_list)))]
@@ -100,8 +100,8 @@ for i, item in enumerate(sorted_list):
                           label_flag=False)
     else:
         _, y_retrace = average_curves(prefix_full_path,file_number_list, curve_type, direction=1)
-        plot_single_curve(x, y, axis=axis, curve_type=curve_type, fontsize=fontsize, marker_size=marker_size,
-                          y_retrace=y_retrace, color_map=color_map,label_flag=False)
+        plot_single_curve(x[slice_start:slice_end], y[slice_start:slice_end], axis=axis, curve_type=curve_type, fontsize=fontsize, marker_size=marker_size,
+                          y_retrace=y_retrace[slice_start:slice_end], color_map=color_map,label_flag=False)
 
 
 filtered_str =""
