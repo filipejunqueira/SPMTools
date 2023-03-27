@@ -17,15 +17,16 @@ plt.style.use("dark_background")
 folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
 prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_1.Df(Z)_mtrx"
-csv_list = load_on_off_spec_list_from_cvs()
+csv_list = load_on_off_spec_list_from_cvs(cvs_name="Cu3spec_on_off_list")
 
 path_on = []
 path_off = []
 results = pd.DataFrame()
 
 
-
 number_of_curves =len(csv_list)
+print(f"Number of curves: {number_of_curves}")
+
 counter_off_not_match = 0
 
 for idx,item in enumerate(csv_list):
@@ -92,7 +93,7 @@ for idx,item in enumerate(csv_list):
 
     # Parameters for initializing the sjarvis devoconvolution
 
-    A=0.52E-9
+    A = 0.52E-9
     f0 = 24234
     k = 1800
 

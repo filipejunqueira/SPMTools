@@ -20,7 +20,7 @@ from numba import njit
 import itertools
 
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
-
+color_map = {"green": "#00FF00", "red": "#FF0000", "blue": "#0000FF", "yellow": "#FFFF00", "orange": "#FFA500"}
 
 # THIS NEEDS TO BE CHANGE IF THE PROJECT FOLDER CHANGES!
 
@@ -468,7 +468,7 @@ def plot_curve_list(curve_list, X, save=True, title="Title", name_x="X", name_y=
             os.mkdir(f"{pwd}/{folder_name}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{folder_name}/{name_y}Vs{name_x}", formatstr='.eps', facecolor='auto',
+        plt.savefig(fname=f"{pwd}/{folder_name}/{name_y}Vs{name_x}.png", facecolor='auto',
                     edgecolor='auto')
     else:
         pass
@@ -512,7 +512,7 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
             os.mkdir(f"{pwd}/{directory_path}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}.png", facecolor='auto', edgecolor='auto')
     else:
         pass
 
@@ -548,7 +548,7 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
             os.mkdir(f"{pwd}/{directory_path}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.svg', facecolor='auto', edgecolor='auto')
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}.png", facecolor='auto', edgecolor='auto')
     else:
         pass
 
@@ -576,7 +576,6 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
     axis.set_ylabel("Force [nN]")
 
 
-
     axis.legend(loc=0)
     if save == True:
         pwd = os.getcwd()
@@ -585,7 +584,7 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
             os.mkdir(f"{pwd}/{directory_path}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{directory_path}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+        plt.savefig(fname=f"{pwd}/{directory_path}/{name}.png", facecolor='auto', edgecolor='auto')
     else:
         pass
 
@@ -594,7 +593,7 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
 
 # Plot both things at the same time. Probably should be deprecated
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off, z_force, z_df, save=False,
-                       name="ForceVsZ", retrace=False):
+                       name="ForceVsZ", retrace=False, color_map=color_map):
     figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
 
     sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_trace * 10 ** 9, color=color_map["green"],
@@ -630,7 +629,7 @@ def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off,
             os.mkdir(f"{pwd}/{force_dir_graphs}")
         else:
             pass
-        plt.savefig(fname=f"{pwd}/{force_dir_graphs}/{name}", formatstr='.eps', facecolor='auto', edgecolor='auto')
+        plt.savefig(fname=f"{pwd}/{force_dir_graphs}/{name}.png", facecolor='auto', edgecolor='auto')
     else:
         pass
 
@@ -695,66 +694,10 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
                 data_list.append((item1, item2, item3))
     return data_list
 
-# Fit lennard Jones. Does not work yet.
-def fit_lennard_jones(z_on, z_off, df_off, A=0.2E-9, k=1800, f0=25000, simple=False):
-    """
-    # NOT WORKING AT THE MOMENT!!!
-    It fits the Lennard-Jones potential to the OFF trace and returns the fitted OFF trace
+# Fit lennard Jones. Created with the help of ChatGPT 4.0 (as an experiment).
 
-    :param z_on: the z-values for the ON trace
-    :param z_off: the z-values for the OFF trace
-    :param df_off: the force OFF trace
-    :param A: tip Amplitude
-    :param k: spring constant, defaults to 1800 (optional)
-    :param f0: the resonance frequency of the cantilever, defaults to 25000 (optional)
-    :param simple: if True, then the fit is done with a simple Lennard-Jones potential. If False, then the fit is done with
-    a more complex Lennard-Jones potential, defaults to False (optional)
-    :return: The fitted_df_off is the fitted force OFF trace.
-    """
-    print(f"range z_on [{np.min(z_on)} to {np.max(z_on)}]")
-    print(f"range z_off [{np.min(z_off)} to {np.max(z_off)}]")
 
-    #translating z_on first
 
-    u_on = z_on-min(z_on)+10**-9
-    u_off =z_off-min(z_off)+10**-9
-
-    print(f"range u_on [{np.min(u_on)} to {np.max(u_on)}]")
-    print(f"range u_off [{np.min(u_off)} to {np.max(u_off)}]")
-    if simple == False:
-
-        def off_objective(z, a, b, c):
-            return a*(1/(z+b)**(-13)) + c
-
-        E = 0.371E-18
-        sigma = 0.235E-9
-        prefactor = -12 * f0 * E / (sigma * k * A)
-
-        # fitting, here is where the magic happens:
-        parameters_opt, parameters_pcov = curve_fit(off_objective, u_off, df_off, p0=(prefactor, sigma, sigma))
-        #parameters_opt, parameters_pcov = curve_fit(off_objective, u_off, df_off)
-
-        print(parameters_opt)
-        a, b, c = parameters_opt
-        fitted_df_off = off_objective(u_on, a, b, c)
-
-        ## plot for checking
-        figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
-
-        sns.lineplot(ax=axis, x=u_off, y=df_off, color=color_map["green"],
-                     label="original")
-        sns.lineplot(ax=axis, x=u_on, y=fitted_df_off, color=color_map["red"],
-                     label="fitted")
-
-        axis.set_title("DF (OFF and fitted OFF) vs Z")
-        axis.set_xlabel("Z[nm]")
-        axis.set_ylabel("df [Hz]")
-        plt.show()
-
-        return fitted_df_off, parameters_opt, parameters_pcov
-
-    elif simple == True:
-        pass
 
 # Create df Lennard Jones curve
 def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,
