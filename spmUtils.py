@@ -458,9 +458,9 @@ def plot_curve_list(curve_list, X, save=True, title="Title", name_x="X", name_y=
     for curve in curve_list:
         sns.lineplot(ax=axis, x=X, y=curve)
 
-    axis.set_title(f"{title}")
-    axis.set_xlabel(f"{name_x}{unit_x}")
-    axis.set_ylabel(f"{name_y}{unit_y}")
+    axis.set_title(f"{title}", fontsize=fontsize)
+    axis.set_xlabel(f"{name_x}{unit_x}", fontsize=(fontsize - 2))
+    axis.set_ylabel(f"{name_y}{unit_y}", fontsize=(fontsize - 2))
 
     if save == True:
         pwd = os.getcwd()
@@ -487,7 +487,7 @@ def get_matrix_image(image_path):
     return im, message, message_im
 
 # Simple df (ON and OFF) plot.
-def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", retrace=False, off=True):
+def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", retrace=False, off=True, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
     sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color=color_map["green"], label="df ON trace")
@@ -500,9 +500,9 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
     elif off == False:
         pass
 
-    axis.set_title("df (ON and OFF) vs Z")
-    axis.set_xlabel("Z[nm]")
-    axis.set_ylabel("df[Hz]")
+    axis.set_title("df (ON and OFF) vs Z", fontsize=fontsize)
+    axis.set_xlabel("Z[nm]", fontsize=(fontsize - 2))
+    axis.set_ylabel("df[Hz]", fontsize=(fontsize - 2))
     axis.legend(loc=0)
 
     if save == True:
@@ -519,7 +519,7 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
     plt.show()
 
 #Plot the direct forces (without subtracting).
-def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ", retrace=False):
+def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ", retrace=False, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
     sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace * 10 ** 9, color=color_map["green"], label="force trace")
@@ -527,16 +527,16 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
         sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace * 10 ** 9, color=color_map["yellow"],
                  label="force retrace")
         axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(Force_ON_retrace) * 10 ** 9, 1)}nN",
-                  transform=axis.transAxes)
+                  transform=axis.transAxes, fontsize=fontsize, alpha=0.75)
     elif retrace == False:
         pass
 
     sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF * 10 ** 9, color=color_map["red"], label="force off")
 
-    axis.set_title("Force(ON) and Force(OFF) Vs Z")
-    axis.set_xlabel("Z[nm]")
-    axis.set_ylabel("Force [nN]")
-    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 9, 1)}nN", transform=axis.transAxes)
+    axis.set_title("Force(ON) and Force(OFF) Vs Z", fontsize=fontsize)
+    axis.set_xlabel("Z[nm]",fontsize=(fontsize-2))
+    axis.set_ylabel("Force [nN]", fontsize=(fontsize-2))
+    axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 9, 1)}nN", transform=axis.transAxes, alpha = 0.75)
 
 
     axis.legend(loc=0)
@@ -555,7 +555,7 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
     plt.show()
 
 # Plots the short range forces
-def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ", retrace=False):
+def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ", retrace=False, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
 
     sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 9, color=color_map["green"],
@@ -571,9 +571,9 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
     elif retrace == False:
         pass
 
-    axis.set_title("Force (ON - OFF) vs Z")
-    axis.set_xlabel("Z[nm]")
-    axis.set_ylabel("Force [nN]")
+    axis.set_title("Force (ON - OFF) vs Z", fontsize=fontsize)
+    axis.set_xlabel("Z[nm]", fontsize=(fontsize-2))
+    axis.set_ylabel("Force [nN]", fontsize=(fontsize-2))
 
 
     axis.legend(loc=0)
@@ -593,7 +593,7 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
 
 # Plot both things at the same time. Probably should be deprecated
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off, z_force, z_df, save=False,
-                       name="ForceVsZ", retrace=False, color_map=color_map):
+                       name="ForceVsZ", retrace=False, color_map=color_map, fontsize=14):
     figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
 
     sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_trace * 10 ** 9, color=color_map["green"],
@@ -608,18 +608,18 @@ def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off,
     elif retrace == False:
         pass
 
-    axis[0].set_title("Force (ON - OFF) vs Z")
-    axis[0].set_xlabel("Z[nm]")
-    axis[0].set_ylabel("Force[nN]")
+    axis[0].set_title("Force (ON - OFF) vs Z", fontsize=fontsize)
+    axis[0].set_xlabel("Z[nm]", fontsize=(fontsize-2))
+    axis[0].set_ylabel("Force[nN]", fontsize=(fontsize-2))
     axis[0].legend(loc=0)
 
     sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_trace, color=color_map["green"], label="df trace")
     sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_off, color=color_map["red"], label="df off")
     sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_retrace, color=color_map["yellow"], label="df retrace")
 
-    axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z")
-    axis[1].set_xlabel("Z[nm]")
-    axis[1].set_ylabel("df[Hz]")
+    axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z", fontsize=fontsize)
+    axis[1].set_xlabel("Z[nm]", fontsize=(fontsize-2))
+    axis[1].set_ylabel("df[Hz]", fontsize=(fontsize-2))
     axis[1].legend(loc=0)
 
     if save == True:
@@ -695,9 +695,30 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
     return data_list
 
 # Fit lennard Jones. Created with the help of ChatGPT 4.0 (as an experiment).
+def fit_lennard_jones(df_off, A=0.2E-9, k=1800, f0=25000, z0=0, simple=True):
 
 
+    def lj_potential(z, A, k, n, m, z0):
+        r = z - z0
+        return A / (n * r ** m) * (1 / r ** n - k / r ** m) * (r > 0)
 
+    if simple:
+        model = Model(lj_potential)
+        params = model.make_params(A=A, k=k, n=6, m=3, z0=z0)
+    else:
+        def lj_force(z, A, k, f0, n, m, z0):
+            r = z - z0
+            omega0 = 2 * np.pi * f0
+            return A * omega0 ** 2 * r / (2 * (r ** 2 + (k / omega0) ** 2) ** (3 / 2)) * (r > 0)
+
+        model = Model(lj_force)
+        params = model.make_params(A=A, k=k, f0=f0, n=6, m=3, z0=z0)
+
+    result = model.fit(df_off, params, z=z_off)
+
+    lj_func = lambda z: result.best_values['A'] / (result.best_values['n'] * (z - result.best_values['z0']) ** result.best_values['m']) * \
+                        (1 / (z - result.best_values['z0']) ** result.best_values['n'] - result.best_values['k'] / (z - result.best_values['z0']) ** result.best_values['m']) * (z > result.best_values['z0'])
+    return result, lj_func
 
 # Create df Lennard Jones curve
 def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,

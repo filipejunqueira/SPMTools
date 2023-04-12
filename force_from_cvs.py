@@ -7,15 +7,14 @@ from spmUtils import *
 import csv
 from scipy.signal import savgol_filter
 
-sns.set()  # Setting seaborn as default style even if use only matplotlib
-sns.set(style="ticks", context="talk")
-sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
-plt.style.use("dark_background")
+#sns.set()  # Setting seaborn as default style even if use only matplotlib
+#sns.set(style="ticks", context="talk")
+#sns.set_style("darkgrid", {"grid.color": "1", "grid.linestyle": ":"})
 
 
 # Loading the data from the csv file and then it is calculating the force for each spectra.
-folder_path = "/media/captainbroccoli/DATA/2022-07-17/"
-prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+folder_path = "/media/captainbroccoli/DATA/2022-08-12/"
+prefix = "20220812-124820_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_1.Df(Z)_mtrx"
 csv_list = load_on_off_spec_list_from_cvs(cvs_name="Cu3spec_on_off_list")
 
@@ -62,6 +61,11 @@ for idx,item in enumerate(csv_list):
         counter_off_not_match = counter_off_not_match+1
         #warning
         print(f"{item[0]} and {item[1]} did not match, I found these ranges: {np.round(np.min(z_on_check)*10E9,4)}nm to {np.round(np.max(z_on_check)*10E9,4)}nm vs {np.round(np.min(z_off_check)*10E9,4)}nm to {np.round(np.max(z_off_check)*10E9,4)}nm")
+        print(f"Will have to interpolate the OFF curve to match the ON curve")
+        # interpolate the OFF curve to match the ON curve
+        new_Z_off, new_df_off = fit_lennard_jones(dfOFF, simple=True)
+        dfOFF = pd.DataFrame({'deltaF': new_df_off, 'Z': new_Z_off})
+
 
 
     # Data frames of the difference of frequency shifts
@@ -122,12 +126,14 @@ for idx,item in enumerate(csv_list):
     z_force = z_on
     z_df = df_diff_trace["Z"]
 
-    plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=True)
-    plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
-    plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
-    plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False)
-    plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False)
-    plot_forces_and_df(force_diff_trace_filtered,force_diff_retrace_filtered,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ_{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False)
+    fontsize = 24
+
+    plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=True, fontsize=fontsize)
+    #plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_and_df(force_diff_trace_filtered,force_diff_retrace_filtered,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ_{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False, fontsize=fontsize)
 
 
 
