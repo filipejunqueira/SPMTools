@@ -62,8 +62,17 @@ for idx,item in enumerate(csv_list):
         #warning
         print(f"{item[0]} and {item[1]} did not match, I found these ranges: {np.round(np.min(z_on_check)*10E9,4)}nm to {np.round(np.max(z_on_check)*10E9,4)}nm vs {np.round(np.min(z_off_check)*10E9,4)}nm to {np.round(np.max(z_off_check)*10E9,4)}nm")
         print(f"Will have to interpolate the OFF curve to match the ON curve")
-        # interpolate the OFF curve to match the ON curve
-        new_Z_off, new_df_off = fit_lennard_jones(dfOFF, simple=True)
+
+        #sends the data frame df_OFF which has been averaged containg Z and deltaF to the fit_lennard_jones function.
+        #Returns a lambda function
+        lj_function = fit_lennard_jones(dfOFF, simple=True)
+
+
+
+        new_Z_off = np.zeros(len())
+        for z in df_ON_trace['Z']:
+            df
+
         dfOFF = pd.DataFrame({'deltaF': new_df_off, 'Z': new_Z_off})
 
 

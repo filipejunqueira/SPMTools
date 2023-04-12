@@ -697,28 +697,32 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
 # Fit lennard Jones. Created with the help of ChatGPT 4.0 (as an experiment).
 def fit_lennard_jones(df_off, A=0.2E-9, k=1800, f0=25000, z0=0, simple=True):
 
+    if simple == False:
+        pass
 
-    def lj_potential(z, A, k, n, m, z0):
-        r = z - z0
-        return A / (n * r ** m) * (1 / r ** n - k / r ** m) * (r > 0)
 
-    if simple:
-        model = Model(lj_potential)
-        params = model.make_params(A=A, k=k, n=6, m=3, z0=z0)
-    else:
-        def lj_force(z, A, k, f0, n, m, z0):
+    if simple == True
+        def lj_potential(z, A, k, n, m, z0):
             r = z - z0
-            omega0 = 2 * np.pi * f0
-            return A * omega0 ** 2 * r / (2 * (r ** 2 + (k / omega0) ** 2) ** (3 / 2)) * (r > 0)
+            return A / (n * r ** m) * (1 / r ** n - k / r ** m) * (r > 0)
 
-        model = Model(lj_force)
-        params = model.make_params(A=A, k=k, f0=f0, n=6, m=3, z0=z0)
+        if simple:
+            model = Model(lj_potential)
+            params = model.make_params(A=A, k=k, n=6, m=3, z0=z0)
+        else:
+            def lj_force(z, A, k, f0, n, m, z0):
+                r = z - z0
+                omega0 = 2 * np.pi * f0
+                return A * omega0 ** 2 * r / (2 * (r ** 2 + (k / omega0) ** 2) ** (3 / 2)) * (r > 0)
 
-    result = model.fit(df_off, params, z=z_off)
+            model = Model(lj_force)
+            params = model.make_params(A=A, k=k, f0=f0, n=6, m=3, z0=z0)
 
-    lj_func = lambda z: result.best_values['A'] / (result.best_values['n'] * (z - result.best_values['z0']) ** result.best_values['m']) * \
-                        (1 / (z - result.best_values['z0']) ** result.best_values['n'] - result.best_values['k'] / (z - result.best_values['z0']) ** result.best_values['m']) * (z > result.best_values['z0'])
-    return result, lj_func
+        result = model.fit(df_off, params, z=z_off)
+
+        lj_func = lambda z: result.best_values['A'] / (result.best_values['n'] * (z - result.best_values['z0']) ** result.best_values['m']) * \
+                            (1 / (z - result.best_values['z0']) ** result.best_values['n'] - result.best_values['k'] / (z - result.best_values['z0']) ** result.best_values['m']) * (z > result.best_values['z0'])
+        return result, lj_func
 
 # Create df Lennard Jones curve
 def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,
