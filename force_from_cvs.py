@@ -1,4 +1,4 @@
-import numpy as np
+\usepackage{ulem}import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import access2thematrix
@@ -21,11 +21,10 @@ csv_list = load_on_off_spec_list_from_cvs(cvs_name="Cu3spec_on_off_list")
 path_on = []
 path_off = []
 results = pd.DataFrame()
-
+fontsize = 24
 
 number_of_curves =len(csv_list)
 print(f"Number of curves: {number_of_curves}")
-
 counter_off_not_match = 0
 
 for idx,item in enumerate(csv_list):
@@ -63,19 +62,12 @@ for idx,item in enumerate(csv_list):
         print(f"{item[0]} and {item[1]} did not match, I found these ranges: {np.round(np.min(z_on_check)*10E9,4)}nm to {np.round(np.max(z_on_check)*10E9,4)}nm vs {np.round(np.min(z_off_check)*10E9,4)}nm to {np.round(np.max(z_off_check)*10E9,4)}nm")
         print(f"Will have to interpolate the OFF curve to match the ON curve")
 
-        #sends the data frame df_OFF which has been averaged containg Z and deltaF to the fit_lennard_jones function.
-        #Returns a lambda function
-        lj_function = fit_lennard_jones(dfOFF, simple=True)
-
-
-
-        new_Z_off = np.zeros(len())
-        for z in df_ON_trace['Z']:
-            df
-
-        dfOFF = pd.DataFrame({'deltaF': new_df_off, 'Z': new_Z_off})
-
-
+        fitted_function = fit_OFF(dfOFF)
+        og_dfOFF = dfOFF
+        new_deltaF = fitted_function(dfON_trace['Z'].to_numpy())
+        dfOFF = pd.DataFrame({'deltaF': new_deltaF, 'Z': dfOFF_trace['Z']})
+        #Evaluating the fitting:
+        plot_OFF_fitting(og_dfOFF,dfOFF,new_deltaF,item[0], item[1],fontsize=fontsize)
 
     # Data frames of the difference of frequency shifts
     df_diff_trace_temp = dfON_trace["deltaF"].subtract(dfOFF["deltaF"])
@@ -135,16 +127,43 @@ for idx,item in enumerate(csv_list):
     z_force = z_on
     z_df = df_diff_trace["Z"]
 
-    fontsize = 24
 
     plot_df(dfON_trace.deltaF,dfON_retrace.deltaF,dfOFF.deltaF, dfON_retrace.Z, name=f"dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=True, fontsize=fontsize)
-    #plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_direct(force_ON_trace,force_ON_retrace,force_OFF,z_on, name=f"Force_Full_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
     plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
     plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False, fontsize=fontsize)
+    plot_forces_short_range(force_diff_trace,force_diff_retrace,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_with_retrace", save=True, retrace=True, fontsize=fontsize)
+    plot_forces_short_range(force_diff_trace_filtered,force_diff_retrace_filtered,z_on, name=f"Force_short_range_VsZ{item[0]}_ON_{item[1]}_OFF_with_retrace_filtered_order{filter_order}", save=True, retrace=True, fontsize=fontsize)
     plot_forces_and_df(force_diff_trace,force_diff_retrace,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ{item[0]}_ON_{item[1]}_OFF", save=True, retrace=False, fontsize=fontsize)
     plot_forces_and_df(force_diff_trace_filtered,force_diff_retrace_filtered,dfON_trace["deltaF"],dfON_retrace["deltaF"], dfOFF["deltaF"],z_force,z_df,name=f"Force_and_dfVsZ_{item[0]}_ON_{item[1]}_OFF_filtered_order{filter_order}", save=True, retrace=False, fontsize=fontsize)
 
+    # Exporting frequency shift difference traces and forces to csv files
+    df_diff_trace_temp = df_diff_trace_filtered['deltaF']
+    z_on_export = df_diff_trace_filtered['Z']
 
+    df_export_trace_filtered = np.column_stack((z_on_export*10**9,df_diff_trace_temp))
+    np.savetxt(f'df_trace_{item[0]}_filtered.csv',df_export_trace_filtered, delimiter=',', header='x(nm),y(Hz)', comments='#')
+
+    df_diff_trace_non_filtered = df_diff_trace['deltaF']
+    z_on_export_non_filtered = df_diff_trace['Z']\
+
+    df_export_trace_non_filtered = np.column_stack((z_on_export_non_filtered*10**9,df_diff_trace_non_filtered))
+    np.savetxt(f'df_trace_{item[0]}_non_filtered.csv',df_export_trace_non_filtered, delimiter=',', header='x(nm),y(Hz)', comments='#')
+
+    df_export_retrace_non_filtered = np.column_stack((z_on_export_non_filtered*10**9,df_diff_retrace_temp))
+    np.savetxt(f'df_retrace_{item[0]}_non_filtered.csv',df_export_retrace_non_filtered, delimiter=',', header='x(nm),y(Hz)', comments='#')
+
+    force_export_trace = np.column_stack((z_on*10**9,force_diff_trace*10**9))
+    np.savetxt(f'force_trace_{item[0]}.csv',force_export_trace, delimiter=',',  header='x(nm),y(nN)', comments='#')
+
+    force_export_trace_filtered = np.column_stack((z_on*10**9,force_diff_trace_filtered*10**9))
+    np.savetxt(f'force_trace_{item[0]}_filtered.csv',force_export_trace_filtered, delimiter=',',header='x(nm),y(nN)', comments='#')
+
+    force_export_retrace = np.column_stack((z_on*10**9,force_diff_retrace*10**9))
+    np.savetxt(f'force_retrace_{item[0]}.csv',force_export_retrace, delimiter=',', header='x(nm),y(nN)', comments='#')
+
+    force_export_retrace_filtered = np.column_stack((z_on*10**9,force_diff_retrace_filtered*10**9))
+    np.savetxt(f'force_retrace_{item[0]}_filtered.csv',force_export_retrace_filtered, delimiter=',', header='x(nm),y(nN)', comments='#')
 
 print(f"Out of {number_of_curves} pair of curves, {counter_off_not_match} did not match")
 print("Done, I owe you nothing!")

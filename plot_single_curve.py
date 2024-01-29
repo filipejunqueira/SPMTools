@@ -24,9 +24,9 @@ collective_pallet = ["#845EC2","#BD38B2","#D13A28"]
 
 
 #Folder Structure#######################################################################################################
-root_path = "/media/captainbroccoli/DATA/"
-project_folder_name = "2022-07-17"
-prefix = "20220717-163110_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
+root_path = "/media/captainbroccoli/data_main/"
+project_folder_name = "2022-08-07"
+prefix = "20220807-174532_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 sufix = "_mtrx"
 project_folder_path = os.path.join(root_path,project_folder_name)
 prefix_full_path = os.path.join(project_folder_path,prefix)
@@ -37,12 +37,12 @@ marker_size = 260
 figsize = (30,16)
 
 # File
-curve_type = "Df(V)"
-file_id =5
-n_files = 1
+curve_type = "Aux2(V)"
+file_id =81
+n_files = 4
 plot_retrace_flag = False
 slice_start = 0
-slice_end = 512
+slice_end = 508
 
 # Filtering
 filter_flag = False
@@ -52,17 +52,17 @@ filter_window = 7  # This needs to be an odd number
 
 # Fitting
 n_curves= 1
-fit_type = "voigt"
+fit_type = "lorentzian"
 algo = "leastsq"
-intial_guess = 3.2
-
+intial_guess = 3.3
+alpha_transparency = 0.8 # This is the transparency of the components
 #Fitting background
 fit_exponential = False
-fit_quadratic = False
-plot_background = False
+fit_quadratic = True
+plot_background = True
 linear_background_fit_cutoff = 1
-plot_bestfit = False
-plot_components = False
+plot_bestfit = True
+plot_components = True
 
 #Fix Linear background fitting
 fix_background_linear = False
@@ -152,16 +152,16 @@ figure, axis = plt.subplots(1, 1, figsize=figsize, sharex=True)
 if plot_components is True:
     plot_single_curve(x, y, axis=axis, y_retrace=y_retrace, curve_type=curve_type,
                       fontsize=fontsize, marker_size=marker_size, y_fit=y_bestfit, results_object=results,
-                      color_map=color_map, plot_background=plot_background)
+                      color_map=color_map, plot_background=plot_background, alpha=alpha_transparency)
 
 else:
     plot_single_curve(x, y, axis=axis, y_retrace=y_retrace, curve_type=curve_type,
                       fontsize=fontsize, marker_size=marker_size, y_fit=y_bestfit,
-                      color_map=color_map)
+                      color_map=color_map, alpha=alpha_transparency)
 
 # Building path to save the image:
 path_dic = {'curve_type': curve_type, 'special_string': project_folder_name, 'file_id': file_id, 'n_files': n_files ,'filtered_str': filtered_str }
 save_plot(path_dic,save_dir_name)
 plt.show()
 
-print("I owe you nothing")
+print("I owe you nothing!")

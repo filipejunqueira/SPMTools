@@ -15,7 +15,7 @@ folder_path = "/media/captainbroccoli/DATA/2022-07-29/"
 prefix = "20220729-095353_Cu(111)--AFM_NonContact_QPlus_AtomManipulation_AuxChannels--"
 type = "Aux2(V)"
 sufix = "_mtrx"
-file_number=["3_1"]
+file_number=["37_1"]
 x = np.zeros(512)
 y = np.zeros(512)
 

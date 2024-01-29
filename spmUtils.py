@@ -9,18 +9,17 @@ from scipy.signal import savgol_filter
 import os
 import csv
 from lmfit.models import (StepModel,ExpressionModel, PolynomialModel, QuadraticModel, LorentzianModel, LinearModel, VoigtModel, ExponentialModel, GaussianModel, SkewedVoigtModel, SkewedGaussianModel, SplitLorentzianModel, PseudoVoigtModel, SkewedGaussianModel,LognormalModel,ExponentialGaussianModel)
-from lmfit import Model, Parameter, fit_report, minimize
+from lmfit import Model, Parameters, fit_report, minimize
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 from subprocess import check_output
 
 from colour import Color
 from functools import cache
-from numba import njit
 import itertools
 
 ## DISCLAIMER: Documentation was mostly created using AI! called  Mintilify DocWriter.
-color_map = {"green": "#00FF00", "red": "#FF0000", "blue": "#0000FF", "yellow": "#FFFF00", "orange": "#FFA500"}
+color_map = {"green": "#38B38A", "red": "#8b0000", "blue": "#0000FF", "yellow": "#e1ad01", "orange": "#d24e01"}
 
 # THIS NEEDS TO BE CHANGE IF THE PROJECT FOLDER CHANGES!
 
@@ -225,8 +224,44 @@ def save_plot(path_dic,save_dir_name):
     image_name = os.path.join(pwd, save_dir_name, name)
     # Finally saves the image
     plt.savefig(fname=f"{image_name}.svg", facecolor='auto', edgecolor='auto', transparent=True)
+    print(f"Image saved as: {image_name}.svg at {save_dir_name}")
 
-def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fontsize=36, marker_size=100, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None, color_map=None, label_flag=True, plot_background=False):
+def plot_OFF_fitting(og_dfOFF,dfOFF,new_deltaF,idON,idOFF,fontsize=36, folder_name='force_graphs'):
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(10,6))
+
+    # Plot the original df_OFF curve
+    ax.plot(og_dfOFF['Z']*10**9, og_dfOFF['deltaF'], label='Original', linewidth=2)
+
+    # Generate the fitted curve using the fitted function and df_ON_trace["Z"] as input
+    # Replace `fitted_function` with the name of your fitted function
+    # Plot the fitted curve
+    ax.plot(dfOFF["Z"]*10**9, new_deltaF, label='Fitted', linewidth=2, linestyle='--')
+
+    # Set labels for the axes
+    ax.set_xlabel('Z (nm)', fontsize=fontsize*0.8)
+    ax.set_ylabel('Frequency shift (Hz)', fontsize=fontsize*0.8)
+
+    # Add a legend
+    ax.legend(fontsize=fontsize)
+
+    # Customize the plot appearance
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    # Set the title
+    ax.set_title(f'Comparison of Original and Fitted Curves', fontsize=fontsize)
+    pwd = os.getcwd()
+    if os.path.isdir(f"{pwd}/{folder_name}") == False:
+        os.mkdir(f"{pwd}/{folder_name}")
+    else:
+        pass
+    plt.savefig(fname=f"{pwd}/{folder_name}/OFF_curve_comparison_{idON}_fitted_to_{idOFF}.png", facecolor='auto',
+                edgecolor='auto')
+    plt.show()
+
+
+def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fontsize=36, marker_size=100, y_fit= None, y_fit_retrace=None, results_object=None, results_object_retrace = None, color_map=None, label_flag=True, plot_background=False, alpha=0.3):
 
     def _plot_components(results_object, axis=None, x=None, plot_background = False):
         sns.set(font_scale=1.5, style="ticks", context="talk")
@@ -246,12 +281,12 @@ def plot_single_curve(x, y, axis=None, curve_type ="Aux2(V)", y_retrace=None, fo
 
                     color_comp_dic = color_map['color_map_comp']
                     sns.lineplot(ax=axis, x=x, y=(components[f'{key}'] ),
-                                 color=color_comp_dic[(idx - 2) % len(color_comp_dic)], alpha=0.2,
+                                 color=color_comp_dic[(idx - 2) % len(color_comp_dic)], alpha=alpha,
                                  label=f"{key}".strip(f"_") + f"{fwhm}",
                                  linewidth=2.5)
                     if plot_background is True:
                         sns.lineplot(ax=axis, x=x, y=( components[f'quad_']),
-                                 color=color_comp_dic[(idx - 3) % len(color_comp_dic)], alpha=0.2,
+                                 color=color_comp_dic[(idx - 3) % len(color_comp_dic)], alpha=alpha,
                                  label=f"quadratic",
                                  linewidth=1.5)
         else:
@@ -489,20 +524,20 @@ def get_matrix_image(image_path):
 # Simple df (ON and OFF) plot.
 def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", retrace=False, off=True, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
-
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color=color_map["green"], label="df ON trace")
+    linewidth = 2
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_trace, color=color_map["green"], label="df ON trace", linewidth=linewidth)
     if retrace == True:
-        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"], label="df ON retrace")
+        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_ON_retrace, color=color_map["yellow"], label="df ON retrace",linewidth=linewidth)
     elif retrace == False:
         pass
     if off == True:
-        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"], label="df OFF")
+        sns.lineplot(ax=axis, x=z * 10 ** 9, y=df_OFF, color=color_map["red"], label="df OFF", linewidth=linewidth)
     elif off == False:
         pass
 
     axis.set_title("df (ON and OFF) vs Z", fontsize=fontsize)
-    axis.set_xlabel("Z[nm]", fontsize=(fontsize - 2))
-    axis.set_ylabel("df[Hz]", fontsize=(fontsize - 2))
+    axis.set_xlabel("Z[nm]", fontsize=(fontsize*0.8))
+    axis.set_ylabel("df[Hz]", fontsize=(fontsize*0.8))
     axis.legend(loc=0)
 
     if save == True:
@@ -521,21 +556,21 @@ def plot_df(df_ON_trace, df_ON_retrace, df_OFF, z, save=False, name="dfvsZ", ret
 #Plot the direct forces (without subtracting).
 def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=False, name="ForceVsZ", retrace=False, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
-
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace * 10 ** 9, color=color_map["green"], label="force trace")
+    linewidth = 2
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_trace * 10 ** 9, color=color_map["green"], label="force trace", linewidth=linewidth)
     if retrace == True:
         sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_ON_retrace * 10 ** 9, color=color_map["yellow"],
-                 label="force retrace")
+                 label="force retrace", linewidth=linewidth)
         axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(Force_ON_retrace) * 10 ** 9, 1)}nN",
                   transform=axis.transAxes, fontsize=fontsize, alpha=0.75)
     elif retrace == False:
         pass
 
-    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF * 10 ** 9, color=color_map["red"], label="force off")
+    sns.lineplot(ax=axis, x=z * 10 ** 9, y=Force_OFF * 10 ** 9, color=color_map["red"], label="force off", linewidth=linewidth)
 
     axis.set_title("Force(ON) and Force(OFF) Vs Z", fontsize=fontsize)
-    axis.set_xlabel("Z[nm]",fontsize=(fontsize-2))
-    axis.set_ylabel("Force [nN]", fontsize=(fontsize-2))
+    axis.set_xlabel("Z[nm]",fontsize=(fontsize*0.8))
+    axis.set_ylabel("Force [nN]", fontsize=(fontsize*0.8))
     axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(Force_ON_trace) * 10 ** 9, 1)}nN", transform=axis.transAxes, alpha = 0.75)
 
 
@@ -557,23 +592,23 @@ def plot_forces_direct(Force_ON_trace, Force_ON_retrace, Force_OFF, z, save=Fals
 # Plots the short range forces
 def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=False, name="ForceVsZ", retrace=False, fontsize=14):
     figure, axis = plt.subplots(1, 1, figsize=(10, 7), sharex=True)
-
+    linewidth = 2
     sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_trace * 10 ** 9, color=color_map["green"],
-                 label="force diff trace")
+                 label="force diff trace", linewidth=linewidth)
     axis.text(0.5, 0.5, f"min F (trace): {np.round(np.min(force_diff_trace) * 10 ** 9, 1)}nN",
-              transform=axis.transAxes)
+              transform=axis.transAxes, fontsize=fontsize, alpha=0.75)
     if retrace == True:
         sns.lineplot(ax=axis, x=z_on * 10 ** 9, y=force_diff_retrace * 10 ** 9, color=color_map["yellow"],
-                 label="force diff retrace")
+                 label="force diff retrace", linewidth=linewidth)
 
         axis.text(0.5, 0.4, f"min F (trace): {np.round(np.min(force_diff_retrace) * 10 ** 12, 1)}nN",
-                  transform=axis.transAxes)
+                  transform=axis.transAxes, fontsize=fontsize, alpha=0.75)
     elif retrace == False:
         pass
 
     axis.set_title("Force (ON - OFF) vs Z", fontsize=fontsize)
-    axis.set_xlabel("Z[nm]", fontsize=(fontsize-2))
-    axis.set_ylabel("Force [nN]", fontsize=(fontsize-2))
+    axis.set_xlabel("Z[nm]", fontsize=(fontsize*0.8))
+    axis.set_ylabel("Force [nN]", fontsize=(fontsize*0.8))
 
 
     axis.legend(loc=0)
@@ -595,31 +630,31 @@ def plot_forces_short_range(force_diff_trace, force_diff_retrace, z_on, save=Fal
 def plot_forces_and_df(force_trace, force_retrace, df_trace, df_retrace, df_off, z_force, z_df, save=False,
                        name="ForceVsZ", retrace=False, color_map=color_map, fontsize=14):
     figure, axis = plt.subplots(1, 2, figsize=(20, 7), sharex=True)
-
+    linewidth = 2
     sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_trace * 10 ** 9, color=color_map["green"],
-                 label="force trace")
+                 label="force trace",linewidth=linewidth)
     axis[0].text(0.5, 0.5,
                  f"min F (trace): {np.round(np.min(force_trace) * 10 ** 9, 1)}nN", transform=axis[0].transAxes)
     if retrace == True:
         sns.lineplot(ax=axis[0], x=z_force * 10 ** 9, y=force_retrace * 10 ** 9, color=color_map["yellow"],
-                 label="force retrace")
+                 label="force retrace", linewidth=linewidth)
 
         axis[0].text(0.5, 0.4,f"min F (retrace): {np.round(np.min(force_retrace) * 10 ** 9, 1)}nN", transform=axis[0].transAxes)
     elif retrace == False:
         pass
 
     axis[0].set_title("Force (ON - OFF) vs Z", fontsize=fontsize)
-    axis[0].set_xlabel("Z[nm]", fontsize=(fontsize-2))
-    axis[0].set_ylabel("Force[nN]", fontsize=(fontsize-2))
+    axis[0].set_xlabel("Z[nm]", fontsize=(fontsize*0.8))
+    axis[0].set_ylabel("Force[nN]", fontsize=(fontsize*0.8))
     axis[0].legend(loc=0)
 
-    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_trace, color=color_map["green"], label="df trace")
-    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_off, color=color_map["red"], label="df off")
-    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_retrace, color=color_map["yellow"], label="df retrace")
+    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_trace, color=color_map["green"], label="df trace",linewidth=linewidth)
+    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_off, color=color_map["red"], label="df off",linewidth=linewidth)
+    sns.lineplot(ax=axis[1], x=z_df * 10 ** 9, y=df_retrace, color=color_map["yellow"], label="df retrace",linewidth=linewidth)
 
     axis[1].set_title("Df (Ttrace,Retrace,OFF) vs Z", fontsize=fontsize)
-    axis[1].set_xlabel("Z[nm]", fontsize=(fontsize-2))
-    axis[1].set_ylabel("df[Hz]", fontsize=(fontsize-2))
+    axis[1].set_xlabel("Z[nm]", fontsize=(fontsize*0.8))
+    axis[1].set_ylabel("df[Hz]", fontsize=(fontsize*0.8))
     axis[1].legend(loc=0)
 
     if save == True:
@@ -694,35 +729,37 @@ def load_spec_list_from_cvs(folder_base_path=f"{os.getcwd()}", cvs_name="spec_li
                 data_list.append((item1, item2, item3))
     return data_list
 
-# Fit lennard Jones. Created with the help of ChatGPT 4.0 (as an experiment).
-def fit_lennard_jones(df_off, A=0.2E-9, k=1800, f0=25000, z0=0, simple=True):
-
-    if simple == False:
-        pass
 
 
-    if simple == True
-        def lj_potential(z, A, k, n, m, z0):
-            r = z - z0
-            return A / (n * r ** m) * (1 / r ** n - k / r ** m) * (r > 0)
 
-        if simple:
-            model = Model(lj_potential)
-            params = model.make_params(A=A, k=k, n=6, m=3, z0=z0)
-        else:
-            def lj_force(z, A, k, f0, n, m, z0):
-                r = z - z0
-                omega0 = 2 * np.pi * f0
-                return A * omega0 ** 2 * r / (2 * (r ** 2 + (k / omega0) ** 2) ** (3 / 2)) * (r > 0)
+def fit_OFF(df_OFF):
 
-            model = Model(lj_force)
-            params = model.make_params(A=A, k=k, f0=f0, n=6, m=3, z0=z0)
+    def model(x, a, b, c):
+        return a/((b + x*10**9)**c)
 
-        result = model.fit(df_off, params, z=z_off)
+    def residual(params, x, data):
+        a = params['a']
+        b = params['b']
+        c = params['c']
+        model_data = model(x, a, b, c)
+        return data - model_data
 
-        lj_func = lambda z: result.best_values['A'] / (result.best_values['n'] * (z - result.best_values['z0']) ** result.best_values['m']) * \
-                            (1 / (z - result.best_values['z0']) ** result.best_values['n'] - result.best_values['k'] / (z - result.best_values['z0']) ** result.best_values['m']) * (z > result.best_values['z0'])
-        return result, lj_func
+    params = Parameters()
+    params.add('a', value=-2.47)
+    params.add('b', value=1.41)
+    params.add('c', value=1.89)
+
+
+    result = minimize(residual, params, args=(df_OFF['Z'], df_OFF['deltaF']))
+    a = result.params['a'].value
+    b = result.params['b'].value
+    c = result.params['c'].value
+
+    # Print the optimized parameters
+    print(f"Optimized parameters: a={a}, b={b}, c={c}")
+
+    return lambda x: model(x, a, b, c)
+
 
 # Create df Lennard Jones curve
 def sjarvis_benchmark(zmin=0.23E-9, zmax=5.000E-9, points=5000, sigma=0.235E-9, E=0.371E-18, f0=32768, k=1800,
